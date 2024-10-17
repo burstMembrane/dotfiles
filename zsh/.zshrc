@@ -1,0 +1,56 @@
+
+# Path to your oh-my-zsh installation.
+export ZSH="$HOME/.oh-my-zsh"
+
+# add something to PATH
+add_to_path() {
+  # Check if the directory is not already in the PATH
+  if [[ ":$PATH:" != *":$1:"* ]]; then
+    export PATH="$1:$PATH"
+  fi
+}
+
+# See https://github.com/ohmyzsh/ohmyzsh/wiki/Themes
+ZSH_THEME="agnoster"
+
+PROMPT='%n~$'
+
+# zsh plugins
+plugins=(
+autoswitch_virtualenv  
+git
+zsh-syntax-highlighting
+zsh-autosuggestions
+zsh-vim-mode
+)
+
+# oh my zsh
+source $ZSH/oh-my-zsh.sh
+
+# User configuration
+
+#Preferred editor for local and remote sessions
+if [[ -n $SSH_CONNECTION ]]; then
+  export EDITOR='nvim'
+else
+  export EDITOR='nvim'
+fi
+
+# Aliases
+alias lg="lazygit"
+alias nvz="nvim $HOME/.zshrc && echo -e 'reloading zshrc' && source $HOME/.zshrc"
+alias nvconfig="nvim $HOME/.config/nvim/"
+alias ff="fd -t f | sk --preview='bat --color=always {}' | xargs nvim ${}" 
+alias s="kitten ssh"
+alias ssh-reverse="ssh -R 52698:localhost:52698"
+alias manage="poetry run python manage.py"
+alias bunx="bun x"
+alias c="cargo"
+alias faf="fzf --preview='bat --color=always --style=plain {}'"
+# add alias cat to bat
+alias cat="bat"
+alias ls="exa"  
+# Add colors to Terminal
+export CLICOLOR=1
+export LSCOLORS=ExFxBxDxCxegedabagacad
+
