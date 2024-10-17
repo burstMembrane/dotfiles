@@ -1,0 +1,15 @@
+[user]
+	name = Liam
+	email = liamfpower@gmail.com
+[filter "lfs"]
+	clean = git-lfs clean -- %f
+	smudge = git-lfs smudge -- %f
+	process = git-lfs filter-process
+	required = true
+[core]
+	editor = nvim
+[alias]
+	d = difftool
+  cm = commit -m
+  st = status
+
