@@ -1,9 +1,8 @@
 # DOTFILES TODO
 
 
-- [ ] Make install script with stow
-- [ ] Copy tmux conf
-- [ ] Copy .vimrc
-- [ ] Copy .zshrc
-- [ ] Copy kitty.conf
-- [ ] Figure out how to submodule the neovim git or just move it over
+- [x] Make install script with stow
+- [x] Copy tmux conf
+- [x] Copy .vimrc
+- [x] Copy kitty.conf
+- [x] Figure out how to submodule the neovim git or just move it over
