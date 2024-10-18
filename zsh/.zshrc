@@ -54,3 +54,11 @@ alias ls="exa"
 export CLICOLOR=1
 export LSCOLORS=ExFxBxDxCxegedabagacad
 
+export FZF_DEFAULT_OPTS=" \
+--color=bg+:#1e1e1e,bg:#000000,spinner:#d7ba7d,hl:#569cd6 \
+--color=fg:#d4d4d4,header:#569cd6,info:#9cdcfe,pointer:#d7ba7d \
+--color=marker:#dcdcaa,fg+:#d4d4d4,prompt:#9cdcfe,hl+:#569cd6 \
+--color=selected-bg:#264f78 \
+--multi
+--tmux
+"
