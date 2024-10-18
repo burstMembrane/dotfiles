@@ -9,6 +9,6 @@ printf '%s\n' "${packages[@]}"
 for package in "${packages[@]}"
 do 
     echo "Cleaning config for $package"
-    stow -D $package
+    stow -D $package --dotfiles
 done
 
