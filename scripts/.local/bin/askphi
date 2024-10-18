@@ -1,0 +1,4 @@
+#!/bin/bash
+
+# run phi3 with the given string as input
+ollama run phi3 "$@" | mdp

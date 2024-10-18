@@ -1,0 +1,16 @@
+#!/bin/bash
+
+# do an fd to get the executable files in the directories in the array
+directories=()
+while read -d: dir
+do
+    if [ -d "$dir" ]; then
+    directories+=("$dir")    
+    fi
+done <<<"${PATH%:}:"
+
+# space seperate with tr 
+selected=$(fd . -t x -L "${directories[@]}" | xargs basename | uniq | fzf)  
+# lookup with cht.sh  
+echo "$selected" | xargs cht.sh | less 
+

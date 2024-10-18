@@ -1,0 +1,14 @@
+#!/bin/bash
+
+# this script is used to search gh for a repo and then show the readme in the terminal
+
+query=$1
+repo=`gh search repos $query --json name,fullName,description,url | jq -r '.[] | "\(.fullName)\t\(.description)\t\(.url)\t\(.fullName)"' | column -t -s$'\t' | fzf --with-nth=1 --delimiter='\t' | awk 'END {print $1}'`
+
+if [ -z "$repo" ]; then
+  echo "No repo selected"
+  exit 1
+fi
+
+
+gh repo view $repo
