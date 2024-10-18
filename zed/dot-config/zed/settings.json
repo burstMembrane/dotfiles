@@ -8,9 +8,9 @@
 // from the command palette or from `Zed` application menu.
 {
   "theme": "One Dark Pro",
-  "ui_font_size": 14,
+  "ui_font_size": 16,
   "vim_mode": true,
-  "buffer_font_size": 14,
+  "buffer_font_size": 16,
   "format_on_save": "on",
   "formatter": "language_server",
   "language_overrides": {
