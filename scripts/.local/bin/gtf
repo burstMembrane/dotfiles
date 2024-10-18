@@ -1,0 +1,8 @@
+#!/bin/bash
+dir=`fzf --tmux 90% --preview='dirname {} | tree -C'  \
+  | xargs dirname {}`
+
+if [ -n "$dir" ]; then
+  cd $dir
+fi
+
