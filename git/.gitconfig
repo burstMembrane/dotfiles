@@ -1,15 +1,18 @@
 [user]
-	name = Liam
 	email = liamfpower@gmail.com
-[filter "lfs"]
-	clean = git-lfs clean -- %f
-	smudge = git-lfs smudge -- %f
-	process = git-lfs filter-process
-	required = true
+	name = Liam Power
 [core]
-	editor = nvim
-[alias]
-	d = difftool
-  cm = commit -m
-  st = status
-
+	excludesfile = ~/.gitignore_global
+  pager = delta
+[interactive]
+  diffFilter = delta --color-only
+[delta]
+    side-by-side = true
+    line-numbers-left-format = ""
+    line-numbers-right-format = "│ "
+[merge]
+  conflictstyle = diff3
+[diff]
+	helper = store
+[init]
+	defaultBranch = main
