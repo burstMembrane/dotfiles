@@ -9,7 +9,7 @@ for package in "${packages[@]}"
 do 
   if [ -d $package ]; then 
     echo "Installing config for $package"
-    stow -t $HOME $package
+    stow -t $HOME $package --dotfiles
   else
     echo "No config for $package"
 fi
