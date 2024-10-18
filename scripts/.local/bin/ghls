@@ -1,0 +1,14 @@
+
+#!/bin/bash
+
+# this script is used to search gh for a repo and then show the readme in the terminal
+
+repo=`gh repo ls --json nameWithOwner,description,url | jq -r '.[] | "\(.nameWithOwner)\t\(.url)\t\(.nameWithOwner)"' | column -t -s$'\t' | fzf --with-nth=1 --delimiter='\t' | awk 'END {print $2}'`
+
+if [ -z "$repo" ]; then
+  echo "No repo selected"
+  exit 1
+fi
+
+echo $repo
+# gh repo view $repo

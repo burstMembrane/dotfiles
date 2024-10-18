@@ -1,0 +1,6 @@
+#!/bin/bash
+change_dir() {
+  \builtin cd $selected
+}
+selected=$(fzf --tmux --disabled --bind "start:reload:zoxide query -l {q}" --bind "change:reload:zoxide query -l {q}")
+change_dir
