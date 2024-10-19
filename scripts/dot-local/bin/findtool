@@ -10,6 +10,6 @@ do
 done <<<"${PATH%:}:"
 
 # space seperate with tr 
-selected=$(fd . -t x -L "${directories[@]}" | xargs basename | uniq | fzf)  
+selected=$(fd . -t x -L "${directories[@]}" | xargs -I{} basename '{}' | uniq | fzf)  
 echo "$selected" 
 
