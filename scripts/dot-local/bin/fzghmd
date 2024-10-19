@@ -1,0 +1,15 @@
+#!/bin/bash
+LIST="fd -t x --strip-cwd-prefix"
+RELOAD="fd -t x --strip-cwd-prefix"
+COMMAND="bat"
+PREVIEW="du -h -s"
+DEBOUNCE=0.2
+fzf --query "${*:-}" \
+  --ansi \
+  --tmux 90% \
+  --reverse \
+  --bind "start:reload:$LIST" \
+  --bind "change:reload:sleep $DEBOUNCE; $RELOAD" \
+  --bind "enter:become($COMMAND {1})" \
+  --preview "$PREVIEW {1}" \
+  --preview-window 70%

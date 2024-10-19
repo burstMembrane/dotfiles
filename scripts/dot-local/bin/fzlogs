@@ -1,0 +1,10 @@
+#!/bin/bash
+fzf \
+  --bind 'start:reload:systemctl --type=service' \
+  --bind 'enter:become(journalctl -u {1} -f)' \
+  --header-lines=1 \
+  --reverse \
+  --nth 1 \
+  --tmux 90% \
+  --preview="journalctl -u {1} -f" \
+  --preview-window up

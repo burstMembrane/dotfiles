@@ -1,0 +1,18 @@
+#!/bin/bash
+
+#!/bin/bash
+LIST="gh search repos {q}"
+RELOAD="gh search repos {q}"
+COMMAND="gh repo view"
+PREVIEW="gh repo view {1} | glow --style dark -"
+DEBOUNCE=0.5
+fzf --query "${*:-}" \
+  --ansi \
+  --tmux 90% \
+  --delimiter='\t' \
+  --with-nth=1,2 \
+  --bind "start:reload:$LIST" \
+  --bind "change:reload:sleep $DEBOUNCE; $RELOAD" \
+  --bind "enter:become($COMMAND {1})" \
+  --preview "$PREVIEW" \
+  --preview-window 70%
