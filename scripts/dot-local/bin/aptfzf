@@ -1,0 +1,39 @@
+#!/bin/bash
+AWK_REG=
+# aptfzf - APT package search with fzf
+INITIAL_CMD="apt-cache pkgnames"
+fzf --query "$1" --tmux 90%  \
+  --delimiter="\t" \
+  --bind "start:reload:$INITIAL_CMD" \
+  --nth=1 \
+  --with-nth=1 \
+  --bind "enter:become(printf 'Installing package {1} with apt\n\n'; sudo apt install {1})" \
+  --preview='apt-cache show {1} | awk '\''BEGIN { pkg=0; home=0; desc=0; printing_desc=0 }
+  /^Package:/ {
+    if (!pkg) {
+      print;
+      pkg=1;
+    }
+  }
+  /^Homepage:/ {
+    if (!home) {
+      print;
+      home=1;
+    }
+  }
+  /^Description-en:/ {
+    if (!desc) {
+      print;
+      desc=1;
+      printing_desc=1;
+      next;
+    }
+  }
+  printing_desc && /^ / {
+    print;
+    next;
+  }
+  printing_desc && !/^ / {
+    printing_desc=0;
+  }
+'\'' | sed "s/^ *//; s/^Package: /\n**Package**: \n\n/; s/^Homepage: /\n**Homepage**: \n\n/; s/^Description-en: /\n**Description**:\n\n/; s/^\.//" | mdcat'
