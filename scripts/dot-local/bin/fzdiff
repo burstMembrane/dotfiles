@@ -3,7 +3,7 @@ fzdiff() {
 
   # change to root dir of the git repo
   cd $(git rev-parse --show-toplevel)
-  preview="git diff $@  -- {-1} | delta --no-gitconfig "
-  git diff $@ --name-only  | fzf -m --reverse --header "Showing changed files" --tmux 90% --preview-window 70% --ansi --preview "$preview"
+  preview="git diff $@  -- {-1} | delta --no-gitconfig"
+  git diff $@ --name-only | fzf -m --reverse --header "Showing changed files" --tmux 100% --preview-window 75% --ansi --preview "$preview"
 }
 fzdiff
