@@ -1,0 +1,17 @@
+#!/bin/bash
+
+#!/bin/bash
+
+# Set search actions for fzf
+onstart="git branch"
+onenter="git checkout {1}"
+
+# Run fzf to search for repositories using GitHub CLI
+repo_url=$(fzf \
+  --reverse \
+  --ansi \
+  --wrap \
+  --header "Checkout a branch" \
+  --bind "start:reload:$onstart" \
+  --bind "enter:become($onenter)")
+
