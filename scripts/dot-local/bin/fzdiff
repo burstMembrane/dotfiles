@@ -1,0 +1,9 @@
+#!/bin/bash
+fzdiff() {
+
+  # change to root dir of the git repo
+  cd $(git rev-parse --show-toplevel)
+  preview="git diff $@ --color=always -- {-1}"
+  git diff $@ --name-only  | fzf -m --reverse --header "Showing changed files" --tmux 90% --preview-window 70% --ansi --preview "$preview"
+}
+fzdiff
