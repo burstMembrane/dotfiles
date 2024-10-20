@@ -1,9 +1,15 @@
 #!/bin/bash
+
 fzdiff() {
 
-  # change to root dir of the git repo
+  # Change to the root directory of the git repo
   cd $(git rev-parse --show-toplevel)
-  preview="git diff $@  -- {-1} | delta --no-gitconfig"
+
+  # Define the preview command to include the commit hash or range and the selected file
+  preview="git diff $@ -- {-1} | delta --no-gitconfig"
+
+  # Show the list of changed files and use fzf to select with the preview
   git diff $@ --name-only | fzf -m --reverse --header "Showing changed files" --tmux 100% --preview-window 75% --ansi --preview "$preview"
 }
+
 fzdiff
