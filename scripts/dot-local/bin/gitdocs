@@ -21,6 +21,9 @@ repo_url=$(fzf \
   --bind "start:reload:$onstart" \
   --bind "change:reload:$onchange" \
   --bind "enter:become($onenter)")
+if [ -z "$repo_url" ]; then
+  exit 0
+fi
 # Clone the selected repository
 repo_name=$(basename "$repo_url")
 git clone --bare --depth=1 $repo_url $repo_name.git
@@ -33,5 +36,9 @@ blob_hash=$(git ls-tree --name-only -r HEAD | grep '\.md$' | fzf --preview "git 
   --ansi \
   --wrap \
  | awk '{print $3}')
+if [ -z "$blob_hash" ]; then
+  exit 0
+fi
 git show $blob_hash | glow -s dark --pager
+cd -
 rm -rf $repo_name.git
