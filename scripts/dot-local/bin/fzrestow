@@ -1,0 +1,5 @@
+#!/bin/bash
+DOTFILES_DIR=$HOME/dotfiles
+cd $DOTFILES_DIR
+fzf --bind "start:reload: ls -d */ | sed 's/\///'" --prompt "Select packages to restow: " --bind "enter:become(stow {1} -vvv --dotfiles; echo -e 'stowed package {1}')"
+
