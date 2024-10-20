@@ -1,0 +1,16 @@
+#!/bin/bash
+
+
+# Change to the root directory of the git repo
+cd $(git rev-parse --show-toplevel)
+
+# Define the preview command to include the commit hash or range and the selected file
+preview="git diff $@ -- {-1} | delta --no-gitconfig"
+# check if there are any changes 
+if [ -z "$(git diff $@ --name-only)" ]; then
+  echo "No changes to show"
+  exit 0
+fi
+# Show the list of changed files and use fzf to select with the preview
+git diff $@ --name-only | fzf -m --reverse --header "Showing changed files" --tmux 100% --preview-window 75% --ansi --preview "$preview"
+

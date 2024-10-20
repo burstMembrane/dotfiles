@@ -8,9 +8,9 @@
 [interactive]
   diffFilter = delta --color-only
 [delta]
-    side-by-side = true
-    line-numbers-left-format = ""
-    line-numbers-right-format = "│ "
+  side-by-side = true
+  line-numbers-left-format = ""
+  line-numbers-right-format = "│ "
 [merge]
   conflictstyle = diff3
 [diff]
