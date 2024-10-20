@@ -1,0 +1,48 @@
+#!/bin/bash
+
+# Set search actions for fzf
+onstart="([[ -n {q} ]] && gh search repos {q} || true)"
+onchange="sleep 0.2; gh search repos {q} || true"
+onenter="gh repo view {1} --json url | jq -r .url"
+preview="gh repo view {1} | glow -s dark"
+
+# Run fzf to search for repositories using GitHub CLI
+repo_url=$(fzf \
+  --reverse \
+  --tmux 90% \
+  --ansi \
+  --wrap \
+  --header "Search for a repository" \
+  --disabled \
+  --delimiter "\t" \
+  --with-nth 1 \
+  --preview "$preview" \
+  --preview-window 70% \
+  --bind "start:reload:$onstart" \
+  --bind "change:reload:$onchange" \
+  --bind "enter:become($onenter)")
+
+# Exit if no repository is selected
+if [ -z "$repo_url" ]; then
+  echo "No repository selected"
+  exit 1
+fi
+
+# Ask if the user wants to change to the home directory if not already there
+if [ "$PWD" != "$HOME" ]; then
+  echo "Change to $HOME directory?"
+  select yn in "Yes" "No"; do
+    case $yn in
+      Yes ) cd "$HOME"; break;;
+      No ) break;;
+    esac
+  done
+fi
+
+# Clone the selected repository
+repo_name=$(basename "$repo_url")
+echo "Cloning $repo_name"
+gh repo clone "$repo_url"
+
+# Change into the repository directory
+cd "$repo_name"
