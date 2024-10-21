@@ -1,0 +1,7 @@
+#!/bin/zsh
+
+lspath () {
+  (($#)) || set ''
+  print -lr -- $^path/*$^@*(N:t) | sort -u
+}
+lspath

@@ -1,0 +1,2 @@
+ aws s3 ls | fzf --delimiter " " --with-nth 3 | awk '{print $3}'
+

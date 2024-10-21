@@ -1,15 +1,9 @@
-#!/bin/bash
+#!/bin/zsh
 
-# do an fd to get the executable files in the directories in the array
-directories=()
-while read -d: dir
-do
-    if [ -d "$dir" ]; then
-    directories+=("$dir")    
-    fi
-done <<<"${PATH%:}:"
-
-# space seperate with tr 
-selected=$(fd . -t x -L "${directories[@]}" | xargs -I{} basename '{}' | uniq | fzf)  
-echo "$selected" 
-
+lspath() {
+  (($#)) || set ''
+  print -lr -- $^path/*$^@*(N:t) | sort -u
+}
+# space seperate with tr
+selected=$(lspath | fzf)
+echo "$selected"
