@@ -12,8 +12,6 @@ then
     exit 1
 fi
 
-# check if it's a raw github.com link -- will need to be converted to raw.githubusercontent.com
-#
 if [[ $1 == *"github.com"* ]]; then
     echo "Converting github.com link to raw.githubusercontent.com"
     # convert github.com link to raw.githubusercontent.com
@@ -24,13 +22,10 @@ if ! wget --spider $1 2>/dev/null; then
     exit 1
 fi
 
-# check if the last two characters of the url are md
-#
 if [ ${1: -2} != "md" ]; then
     echo "Invalid URL"
     exit 1
 fi
-
 
 wget -qO- $1 | glow - --pager
 
