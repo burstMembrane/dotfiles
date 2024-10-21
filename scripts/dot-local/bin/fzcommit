@@ -1,0 +1,12 @@
+#!/bin/bash
+fzf \
+  --tmux 100% \
+  --ansi \
+  --reverse \
+  --preview='git show {1} | delta --no-gitconfig '  \
+  --preview-window 70% \
+  --with-nth=2.. \
+  --delimiter " " \
+  --bind 'enter:become(git show {1})' \
+  --bind 'start:reload: git log --oneline' \
+
