@@ -1,13 +1,10 @@
 #!/usr/bin/env bash
 
-# 1. Search for text in files using Ripgrep
-# 2. Interactively restart Ripgrep with reload action
-# 3. Open the file in Vim
-BREW_PREFIX="brew search --formulae "
+BREW_PREFIX="brew search --formulae"
 INITIAL_QUERY="${*:-}"
 fzf --ansi \
-    --tmux 80% \
-    --border horizontal \
+    --disabled \
+   --tmux 80% \
     --query "$INITIAL_QUERY" \
     --color "hl:-1:underline,hl+:-1:underline:reverse" \
     --bind "start:reload:$BREW_PREFIX {q}" \

@@ -4,6 +4,7 @@ lspath() {
   (($#)) || set ''
   print -lr -- $^path/*$^@*(N:t) | sort -u
 }
+
 # space seperate with tr
 selected=$(lspath | fzf)
 echo "$selected"
