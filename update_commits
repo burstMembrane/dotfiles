@@ -1,0 +1,66 @@
+#!/bin/bash
+
+# Ensure you have a clean working directory before running this script
+# Also, make sure to backup your repository before attempting a rebase
+
+# Start an interactive rebase from the commit range you want to update
+git rebase -i HEAD~37
+
+# After running this script, an editor will open.
+# Change the 'pick' to 'reword' for the commits you want to modify, save and close the editor.
+# Git will then prompt you to edit the commit message for each 'reword' commit.
+# You can copy-paste the following commit messages as needed:
+
+declare -A commit_messages=(
+  ["273147e"]="feat(commands): update ff and ft commands"
+  ["777b857"]="feat: add fzcommit command"
+  ["932ec80"]="chore: remove extra bat theme"
+  ["c94cdbc"]="chore: update rdmd script"
+  ["9fab298"]="fix(commands): add fzf bindings to ff command"
+  ["fe75670"]="feat(todo): add new item to render HTML in terminal for docs"
+  ["d4f4add"]="docs(todo): update TODO.md"
+  ["ff557b9"]="docs: add documentation to tools.md"
+  ["d5a237e"]="feat: add fuzzy branch checkout functionality"
+  ["3edc7e3"]="docs(todo): add git diff to TODO.md"
+  ["1d70ac8"]="feat(diff): add check for diff changes"
+  ["abf614b"]="refactor: remove redundant function call"
+  ["115b150"]="feat(fzdiff): increase preview window size"
+  ["0213d7a"]="feat(fzdiff): increase preview window size"
+  ["07c2bd4"]="feat(diff): add delta to fuzzy git diff"
+  ["a343975"]="feat: add dot-gitconfig"
+  ["f54adaa"]="chore: update delta configuration"
+  ["5250506"]="feat(diff): fuzzy view git diffs"
+  ["f8a5887"]="chore: rename gitdocs to ghdocs"
+  ["9a1b4ce"]="fix(gitdocs): delete temporary git directory in gitdocs"
+  ["f13529a"]="feat: add gitdocs command"
+  ["2b6be5a"]="feat: add install, uninstall, and fzrestow scripts"
+  ["902f98e"]="feat(scripts): add tmux-fzf to scripts"
+  ["bc13af4"]="feat(scripts): add ghclone and restow scripts"
+  ["a2b1ec5"]="feat(scripts): add fzf scripts for apt and man pages on Linux"
+  ["9f0a539"]="chore: change bat theme"
+  ["a2d0aae"]="chore(scripts): update fzf scripts"
+  ["fb3ad1e"]="feat: add fzf brew search and update tmux to index at 1"
+  ["013bb57"]="chore: update ZED font size"
+  ["a13fb52"]="chore: rename dotfiles with 'dot-' prefix"
+  ["d72b4a7"]="feat(scripts): add gtp and rdmd scripts"
+  ["53b31a5"]="docs: update README"
+  ["bd05c90"]="feat(config): add editor to git config"
+  ["0eaa84b"]="docs: update README and 'ft' command"
+  ["41f93f6"]="feat(fzf): add fzf defaults to zshrc"
+  ["31e4c1e"]="chore: update tmux configuration"
+  ["661dd42"]="feat: add scripts, uninstall.sh, and zed config"
+  ["b96e36e"]="feat: add uninstall script"
+  ["553c613"]="feat: add Neovim module and kitty configuration"
+  ["8d846b6"]="feat(install): update install.sh script"
+)
+
+# Loop through each commit and update the message
+for commit_hash in "${!commit_messages[@]}"; do
+    git rebase -i $commit_hash
+    git commit --amend -m "${commit_messages[$commit_hash]}"
+done
+
+# Complete the rebase
+git rebase --continue
+
+echo "Commit messages updated successfully!"

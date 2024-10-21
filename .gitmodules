@@ -7,3 +7,6 @@
 [submodule "nvim/.config/nvim"]
 	path = nvim/.config/nvim
 	url = https://github.com/burstMembrane/nvim
+[submodule "nvim/dot-config/nvim"]
+	path = nvim/dot-config/nvim
+	url = https://github.com/burstMembrane/nvim
