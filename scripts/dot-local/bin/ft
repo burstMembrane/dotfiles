@@ -11,9 +11,9 @@ fzf --ansi \
     --disabled \
     --query "$INITIAL_QUERY" \
     --color "hl:-1:underline,hl+:-1:underline:reverse" \
-    --bind "start:reload:$RG_PREFIX {q}" \
-    --bind "change:reload:sleep 0.01; $RG_PREFIX {q} || true" \
+    --bind "start:reload:$RG_PREFIX {q} " \
+    --bind "change:reload:sleep 0.01; $RG_PREFIX {q} | delta || true" \
     --delimiter : \
     --preview-window 'right,60%,border-bottom,+{2}+3/3,~3' \
-    --preview 'bat --color=always {1} --style=snip --highlight-line {2}' \
+    --preview 'bat --color=always {1} --style=snip --highlight-line {2} ' \
     --bind 'enter:become(nvim {1} +{2})'
