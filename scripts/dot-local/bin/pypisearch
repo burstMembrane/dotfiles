@@ -1,0 +1,8 @@
+#!/bin/bash
+fzf --tmux 90% \
+  --ansi \
+  --wrap \
+  --bind 'start:reload: getpypipackages list' \
+  --bind 'enter:become: getpypipackages info {} | htmlparse | glow -s pink' \
+  --preview "getpypipackages info {} | htmlparse | glow -s pink" \
+  --preview-window 'right:70%' 
