@@ -1,0 +1,60 @@
+#!/bin/bash
+
+# Function to clean up the repository directory
+cleanup() {
+  echo "Cleaning up..."
+  rm -rf "$repo_name.git"
+}
+
+# Trap Ctrl+C (SIGINT) and ensure cleanup is run
+trap cleanup SIGINT
+
+# Set search actions for fzf
+onstart="([[ -n {q} ]] && gh search repos {q} || true)"
+onchange="sleep 0.2; gh search repos {q} || true"
+onenter="gh repo view {1} --json url | jq -r .url"
+preview="gh repo view {1} | glow -s dark"
+
+# Run fzf to search for repositories using GitHub CLI
+repo_url=$(fzf \
+  --reverse \
+  --tmux 90% \
+  --ansi \
+  --wrap \
+  --header "Search for a repository" \
+  --disabled \
+  --delimiter "\t" \
+  --with-nth 1 \
+  --preview "$preview" \
+  --preview-window 70% \
+  --bind "start:reload:$onstart" \
+  --bind "change:reload:$onchange" \
+  --bind "enter:become($onenter)")
+if [ -z "$repo_url" ]; then
+  exit 0
+fi
+
+# Clone the selected repository
+repo_name=$(basename "$repo_url")
+git clone --bare --depth=1 $repo_url $repo_name.git
+cd $repo_name.git
+
+# Change into the repository directory
+blob_hash=$(git ls-tree --name-only -r HEAD | fzf --preview "git show HEAD:{} | bat --color=always --style=snip" \
+  --bind "enter:become(git ls-tree -r HEAD | grep {1})" \
+  --ansi \
+  --tmux 90% \
+  --reverse \
+  --preview-window 70% \
+  --wrap | awk '{print $3}')
+  
+if [ -z "$blob_hash" ]; then
+  cleanup
+  exit 0
+fi
+
+git show $blob_hash | bat --color=always -
+
+# Go back and clean up the repository
+cd -
+cleanup
