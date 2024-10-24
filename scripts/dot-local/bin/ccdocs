@@ -1,0 +1,3 @@
+#!/bin/bash
+
+glow https://gist.githubusercontent.com/qoomon/5dfcdf8eec66a051ecd85625518cfd13/raw/a581f60fabd943b5ff89321e919e0aaa5bd3dccf/conventional-commits-cheatsheet.md
