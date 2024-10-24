@@ -1,4 +1,13 @@
 #!/bin/bash
+# Function to clean up the repository directory
+cleanup() {
+  echo "Cleaning up..."
+  rm -rf "$repo_name.git"
+}
+
+# Trap Ctrl+C (SIGINT) and ensure cleanup is run
+trap cleanup SIGINT
+
 
 # Set search actions for fzf
 onstart="([[ -n {q} ]] && gh search repos {q} || true)"
@@ -32,13 +41,17 @@ cd $repo_name.git
 blob_hash=$(git ls-tree --name-only -r HEAD | grep '\.md$' | fzf --preview "git show HEAD:{} | glow -s dark --pager" \
   --bind "enter:become(git ls-tree -r HEAD | grep {1})" \
     --reverse \
+  --preview-window 70% \
   --tmux 90% \
   --ansi \
   --wrap \
  | awk '{print $3}')
+
 if [ -z "$blob_hash" ]; then
+  cleanup
   exit 0
 fi
+
 git show $blob_hash | glow -s dark --pager
 cd -
-rm -rf $repo_name.git
+cleanup
