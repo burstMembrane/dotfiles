@@ -15,7 +15,7 @@ fi
 if [[ $1 == *"github.com"* ]]; then
     echo "Converting github.com link to raw.githubusercontent.com"
     # convert github.com link to raw.githubusercontent.com
-    #
+fi
 # check if the url is valid
 if ! wget --spider $1 2>/dev/null; then
     echo "Invalid URL"
