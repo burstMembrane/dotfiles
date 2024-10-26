@@ -1,0 +1,12 @@
+#!/bin/zsh
+
+gh repo view `fzf \
+    --height 80% \
+    --nth 1 \
+    --delimiter '\t' \
+    --bind "start:reload:cargo search {q} | tr '=' '\t' | awk '{print $1}'" \
+    --bind "change:reload:sleep 0.2; cargo search {q} | tr '=' '\t' | awk '{print $1}'" \
+    --bind "enter:become(craterepourl {1})"`
+!/bin/zsh
+
+

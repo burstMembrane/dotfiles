@@ -1,0 +1,13 @@
+#!/bin/bash
+# Use fzf to select a directory
+fzf \
+  --ansi \
+  --tmux 90% \
+  --bind 'start:reload: fd -t d --maxdepth 1 | xargs stat -f "%a %N" | sort -nr' \
+  --preview-window=right:70% \
+  --preview 'tree -L 2 {2}' \
+  --reverse \
+  --with-nth 2.. \
+  | awk '{print $2}'
+
+\builtin cd "$dir"
