@@ -1,13 +1,12 @@
 #!/bin/bash
 
 # this script is used to search gh for a repo and then show the readme in the terminal
-
-repo=`gh repo ls --json nameWithOwner,description,url | jq -r '.[] | "\(.nameWithOwner)\t\(.url)\t\(.nameWithOwner)"' | column -t -s$'\t' | fzf --with-nth=1 --delimiter='\t' | awk 'END {print $2}'`
-
-if [ -z "$repo" ]; then
-  echo "No repo selected"
-  exit 1
-fi
-
-echo $repo
-# gh repo view $repo
+fzf \
+  --bind 'start:reload: gh repo ls' \
+  --bind 'enter:become(echo {1})' \
+  --header-lines 1 \
+  --delimiter "\t" \
+  --preview "gh repo view {1}" \
+  --preview-window=right:60% \
+  --delimiter='\t' \
+  --with-nth=1
