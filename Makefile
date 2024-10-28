@@ -1,7 +1,7 @@
 install:
 	@echo "Installing..."
-	./install.sh
+	./install
 
 uninstall:
 	@echo "Uninstalling..."
-	./uninstall.sh
+	./uninstall
