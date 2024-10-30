@@ -2,7 +2,7 @@
 AWK_REG=
 # aptfzf - APT package search with fzf
 INITIAL_CMD="apt-cache pkgnames"
-fzf --query "$1" --tmux 90%  \
+fzf --query "$1" --tmux 90% \
   --delimiter="\t" \
   --bind "start:reload:$INITIAL_CMD" \
   --nth=1 \
