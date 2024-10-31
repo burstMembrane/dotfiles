@@ -1,13 +1,14 @@
 #!/bin/bash
-# Use fzf to select a directory
-fzf \
-  --ansi \
-  --tmux 90% \
-  --bind 'start:reload: fd -t d --maxdepth 1 | xargs stat -f "%a %N" | sort -nr' \
-  --preview-window=right:70% \
-  --preview 'tree -L 2 {2}' \
-  --reverse \
-  --with-nth 2.. \
-  | awk '{print $2}'
 
-\builtin cd "$dir"
+nvim --headless -u 'NONE' -c '
+  for f in v:oldfiles | echom f | endfor | quit' 2>&1 |
+  sed 's/[[:space:]]*$//' |
+  while read -r file; do
+    [ -e "$file" ] && echo $(dirname "$file")
+  done | sort -u | uniq |
+  fzf \
+    --tmux 90% \
+    --preview "tree -L 2 {}" \
+    --preview-window=right:60%:wrap \
+    --bind 'enter:become(nvim {})' \
+    --delimiter=' '
