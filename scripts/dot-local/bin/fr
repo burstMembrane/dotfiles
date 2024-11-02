@@ -1,0 +1,14 @@
+#!/bin/bash
+
+nvim --headless -u 'NONE' -c '
+  for f in v:oldfiles | echom f | endfor | quit' 2>&1 |
+  sed 's/[[:space:]]*$//' |
+  while read -r file; do
+    [ -e "$file" ] && echo "$file"
+  done |
+  fzf \
+    --tmux 90% \
+    --preview "bat --style=numbers --color=always --line-range :500 {}" \
+    --preview-window=right:60%:wrap \
+    --bind 'enter:become(nvim {})' \
+    --delimiter=' '
