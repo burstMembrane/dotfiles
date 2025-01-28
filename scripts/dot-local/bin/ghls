@@ -4,7 +4,6 @@
 fzf \
   --bind 'start:reload: gh repo ls' \
   --bind 'enter:become(echo {1})' \
-  --header-lines 1 \
   --delimiter "\t" \
   --preview "gh repo view {1}" \
   --preview-window=right:60% \
