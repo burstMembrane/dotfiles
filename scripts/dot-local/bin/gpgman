@@ -1,0 +1,15 @@
+#!/bin/bash
+
+# This script allow the user to remove gpg keys and repositories
+
+SOURCES_DIR=""
+
+fzf --tmux 90% \
+  --ansi \
+  --wrap \
+  --with-nth -1 \
+  --delimiter '/' \
+  --bind 'start:reload: fd . /etc/apt/sources.list.d/ -e list -t f ' \
+  --bind "enter:become: sudo rm {} && echo -e 'removed {}'" \
+  --preview "cat {}" \
+  --preview-window 'right:70%'
