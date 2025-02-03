@@ -1,31 +1,9 @@
 #!/bin/bash
-echo "Reading md file from $1"
-if [ -z "$1" ]; then
-    echo "Usage: rdmd <url>"
-    exit 1
-fi
 
-if ! command -v glow &> /dev/null
-then
-    echo "glow could not be found"
-    echo "Please install it using: <PACKAGE_MANAGER> install glow"
-    exit 1
-fi
-
-if [[ $1 == *"github.com"* ]]; then
-    echo "Converting github.com link to raw.githubusercontent.com"
-    # convert github.com link to raw.githubusercontent.com
-fi
-# check if the url is valid
-if ! wget --spider $1 2>/dev/null; then
-    echo "Invalid URL"
-    exit 1
-fi
-
-if [ ${1: -2} != "md" ]; then
-    echo "Invalid URL"
-    exit 1
-fi
-
-wget -qO- $1 | glow - --pager
-
+fzf --query "${*:-}" \
+  --tmux 90% \
+  --reverse \
+  --bind 'start:reload:fd -t f -e md {q}' \
+  --bind "enter:become( glow {} --pager)" \
+  --preview "glow {} " \
+  --preview-window 70%

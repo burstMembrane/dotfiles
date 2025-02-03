@@ -1,0 +1,16 @@
+#!/bin/bash
+# open a url in the default browser
+# requires fzf and tmux
+# ensure we're in tmux
+if [ -z "$TMUX" ]; then
+  echo "This script must be run from within tmux"
+  exit 1
+fi
+url_output=$(tmux capture-pane -J -p | grep -oe '(https?):\/\/.*[^>]')
+echo "$url_output"
+
+# url=$(echo "$url_output" | fzf --reverse)
+
+if [ -n "$url" ]; then
+  open "$url"
+fi
