@@ -4,12 +4,12 @@ BREW_PREFIX="brew search --formulae"
 INITIAL_QUERY="${*:-}"
 fzf --ansi \
     --disabled \
-   --tmux 80% \
+    --tmux 80% \
     --query "$INITIAL_QUERY" \
     --color "hl:-1:underline,hl+:-1:underline:reverse" \
     --bind "start:reload:$BREW_PREFIX {q}" \
     --bind "change:reload:sleep 0.1; $BREW_PREFIX {q} || true" \
     --delimiter : \
-    --preview-window 'right,60%,border-bottom,+{2}+3/3,~3' \
+    --preview-window 'right,60%' \
     --preview "brew info -q {} | sed 's/==>/#/g' | col -b | mdcat" \
     --bind 'enter:become(brew install {1})'
