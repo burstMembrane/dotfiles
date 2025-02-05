@@ -1,0 +1,3 @@
+theme = $HOME/.config/ghostty/themes/KittyDefault.theme
+macos-titlebar-style = hidden
+font-size = 19 
