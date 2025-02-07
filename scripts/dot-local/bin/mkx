@@ -1,0 +1,8 @@
+#!/bin/bash
+# 99% of the time it's in the cwd -- we need to provide some completion options based on a fd -t x in the cwd
+fzf --bind="start:reload: rg '#!/' --files-with-matches . | cut -f2 --delimiter /" \
+  --prompt="chmod +x > " \
+  --query="$1" \
+  --select-1 \
+  --exit-0 \
+  --bind "enter:become(chmod +x {})"
