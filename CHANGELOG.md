@@ -2,6 +2,13 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## 0.0.3 - 2025-02-12
+#### Features
+- add test bootstrap script - (fac9e55) - Liam Power
+- add bootstrap-ubuntu - (c373cbf) - Liam Power
+
+- - -
+
 ## 0.0.2 - 2025-02-06
 #### Features
 - **(tmux)** add vim like copy and paste - (eb4f81d) - Liam Power
