@@ -11,7 +11,7 @@ echo "Updating package lists..."
 sudo apt update && sudo apt upgrade -y
 
 echo "Installing dependencies..."
-sudo apt install -y build-essential curl git unzip rar zsh tmux fzf ripgrep bat exa vim
+sudo apt install -y build-essential curl git unzip rar zsh tmux fzf ripgrep bat exa vim fd-find
 
 # Install latest Neovim
 echo "Installing Neovim..."
