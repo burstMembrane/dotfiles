@@ -17,3 +17,9 @@
 	helper = store
 [init]
 	defaultBranch = main
+
+[alias]
+add-safe = "!f() { \
+        git add -p && \
+        git add -N $(git ls-files -o --exclude-standard | xargs -I{} find {} -type f -size -5M); \
+    }; f"

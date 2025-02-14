@@ -1,0 +1,7 @@
+#!/bin/bash
+
+audio_files=$(fd -t f -e mp3 -e wav . -d 1)
+# for each audio file -- open a ffplay window
+for audio_file in $audio_files; do
+  ffplay -autoexit $audio_file
+done

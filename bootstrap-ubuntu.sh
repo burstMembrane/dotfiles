@@ -24,7 +24,7 @@ echo "Updating package lists..."
 sudo apt update && sudo apt upgrade -y
 
 echo "Installing dependencies..."
-sudo apt install -y build-essential curl git unzip rar zsh tmux fzf ripgrep bat exa
+sudo apt install -y build-essential curl git unzip rar zsh tmux fzf ripgrep bat exa vim fd-find
 
 # Install latest Neovim
 # if nvim is not installed
@@ -63,14 +63,6 @@ if [[ ! -d "$HOME/.tmux/plugins/tpm" ]]; then
     echo "Installing Tmux Plugin Manager (TPM)..."
     git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
 fi
-
-
-# Install Tmux Plugin Manager (TPM)
-if [[ ! -d "$HOME/.tmux/plugins/tpm" ]]; then
-    echo "Installing Tmux Plugin Manager (TPM)..."
-    git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
-fi
-
 
 # Install vim-code-dark theme
 if [[ ! -d "$HOME/.vim/pack/themes/start/vim-code-dark" ]]; then

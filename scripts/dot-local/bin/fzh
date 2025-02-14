@@ -1,0 +1,40 @@
+#!/bin/bash
+
+# Check if fzf is installed
+if ! command -v fzf >/dev/null 2>&1; then
+    echo "Error: fzf is not installed. Please install it first."
+    exit 1
+fi
+
+# Function to read zsh history
+read_zsh_history() {
+    # Use fc -l with zsh to get readable history
+    if [ -n "$ZSH_VERSION" ]; then
+        # This needs to be run in zsh
+        zsh -c 'fc -l 1'
+    elif [ -r ~/.zsh_history ]; then
+        # Attempt to read zsh history file directly and decode it
+        command -v strings >/dev/null 2>&1 && strings ~/.zsh_history
+    fi
+}
+
+# Function to read bash history
+read_bash_history() {
+    if [ -r ~/.bash_history ]; then
+        cat ~/.bash_history
+    fi
+}
+
+# Function to execute the history search
+search_and_execute_history() {
+    # Combine both histories, with zsh history taking precedence
+    (read_zsh_history; read_bash_history) |
+    sed 's/^[[:space:]]*[0-9]*[[:space:]]*//; s/^: [0-9:]*;//' |
+    sort |
+    uniq |
+    fzf --border --tac --reverse |
+    (read command && eval "$command")
+}
+
+# Execute the function
+search_and_execute_history
