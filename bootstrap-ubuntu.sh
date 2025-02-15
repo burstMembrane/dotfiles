@@ -4,15 +4,21 @@ set -e  # Exit immediately if a command exits with a non-zero status
 set -u  # Treat unset variables as an error
 set -o pipefail  # Fail a pipeline if any command fails
 
+# Define color variables
+GREEN="\e[32m"
+YELLOW="\e[33m"
+RED="\e[31m"
+BLUE="\e[34m"
+NC="\e[0m" # No color
 
-# we usually start off as root so we need to make a liam user
+# We usually start off as root, so we need to make a 'liam' user
 user=$(whoami)
 initial_dir=$(pwd)
 
-
 if [ "$user" == "liam" ]; then
-    echo "Already a liam user"
+    echo -e "${GREEN}Already using the 'liam' user.${NC}"
 else
+    echo -e "${YELLOW}Creating 'liam' user...${NC}"
     apt install -y sudo
     sudo useradd -m -s /bin/bash liam
     sudo passwd liam
@@ -20,103 +26,129 @@ else
     su - liam
 fi
 
-
-echo "Updating package lists..."
+echo -e "${BLUE}Updating package lists...${NC}"
 sudo apt update && sudo apt upgrade -y
 
-echo "Installing dependencies..."
+echo -e "${BLUE}Installing dependencies...${NC}"
 sudo apt install -y build-essential curl git unzip rar zsh tmux ripgrep bat exa vim fd-find fonts-powerline locales
 
 sudo locale-gen en_US.UTF-8
-# Install latest Neovim
-# if nvim is not installed
-if ! command -v nvim &> /dev/null
-then
-  echo "Installing Neovim..."
-  curl -LO https://github.com/neovim/neovim/releases/latest/download/nvim-linux-x86_64.tar.gz
-  sudo rm -rf /opt/nvim
-  sudo tar -C /opt -xzf nvim-linux-x86_64.tar.gz
-  rm nvim-linux-x86_64.tar.gz
-  export PATH="$PATH:/opt/nvim-linux-x86_64/bin"
-  echo export PATH='$PATH:/opt/nvim-linux-x86_64/bin' >> ~/.bashrc | tee -a ~/.zshrc
-  # test with nvim --version
-  nvim --version
-fi
-# Install uv for python package management
-echo "Installing uv..."
+# Link bat
 
-if ! command -v uv &> /dev/null
-then
-  curl -LsSf https://astral.sh/uv/install.sh | sh
+if [[ ! -d "$HOME/.local/bin" ]]; then
+  mkdir -p ~/.local/bin
 fi
-# install fzf 
+
+if [[ ! -x "$HOME/local/bin/bat" ]]; then
+  ln -s /usr/bin/batcat ~/.local/bin/bat
+fi
+# Install latest Neovim
+if ! command -v nvim &> /dev/null; then
+    echo -e "${YELLOW}Installing Neovim...${NC}"
+    curl -LO https://github.com/neovim/neovim/releases/latest/download/nvim-linux-x86_64.tar.gz
+    sudo rm -rf /opt/nvim
+    sudo tar -C /opt -xzf nvim-linux-x86_64.tar.gz
+    rm nvim-linux-x86_64.tar.gz
+    export PATH="$PATH:/opt/nvim-linux-x86_64/bin"
+    echo export PATH='$PATH:/opt/nvim-linux-x86_64/bin' >> ~/.bashrc | tee -a ~/.zshrc
+    nvim --version
+else
+    echo -e "${GREEN}Neovim is already installed.${NC}"
+fi
+
+# Install uv for Python package management
+echo -e "${BLUE}Installing uv...${NC}"
+if ! command -v uv &> /dev/null; then
+    curl -LsSf https://astral.sh/uv/install.sh | sh
+else
+    echo -e "${GREEN}uv is already installed.${NC}"
+fi
+
+# Install fzf
 if [[ ! -d "$HOME/.fzf" ]]; then
-  git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf
-  ~/.fzf/install
+    echo -e "${YELLOW}Installing fzf...${NC}"
+    git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf
+    ~/.fzf/install
+else
+    echo -e "${GREEN}fzf is already installed.${NC}"
 fi
 
 # Install and configure Zsh with Oh-My-Zsh
 if [[ ! -d "$HOME/.oh-my-zsh" ]]; then
-    echo "Installing Oh-My-Zsh..."
+    echo -e "${YELLOW}Installing Oh-My-Zsh...${NC}"
     sudo apt install -y zsh
     curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh | bash
     chsh -s $(which zsh)
+else
+    echo -e "${GREEN}Oh-My-Zsh is already installed.${NC}"
 fi
-# Install ZSH plugins
-ZSH_CUSTOM="${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom/plugins}"
 
+# Install Zsh plugins
 ZSH_CUSTOM="${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom/plugins}"
 
 for plugin in zsh-syntax-highlighting zsh-autosuggestions; do
-    [[ -d "$ZSH_CUSTOM/$plugin" ]] || git clone "https://github.com/zsh-users/$plugin.git" "$ZSH_CUSTOM/$plugin"
+    if [[ ! -d "$ZSH_CUSTOM/$plugin" ]]; then
+        echo -e "${YELLOW}Installing ${plugin}...${NC}"
+        git clone "https://github.com/zsh-users/$plugin.git" "$ZSH_CUSTOM/$plugin"
+    else
+        echo -e "${GREEN}${plugin} is already installed.${NC}"
+    fi
 done
 
-[[ -d "$ZSH_CUSTOM/zsh-vi-mode" ]] || git clone "https://github.com/jeffreytse/zsh-vi-mode.git" "$ZSH_CUSTOM/zsh-vi-mode"
-
-
+if [[ ! -d "$ZSH_CUSTOM/zsh-vi-mode" ]]; then
+    echo -e "${YELLOW}Installing zsh-vi-mode...${NC}"
+    git clone "https://github.com/jeffreytse/zsh-vi-mode.git" "$ZSH_CUSTOM/zsh-vi-mode"
+else
+    echo -e "${GREEN}zsh-vi-mode is already installed.${NC}"
+fi
 
 # Install Tmux Plugin Manager (TPM)
 if [[ ! -d "$HOME/.tmux/plugins/tpm" ]]; then
-    echo "Installing Tmux Plugin Manager (TPM)..."
+    echo -e "${YELLOW}Installing Tmux Plugin Manager (TPM)...${NC}"
     git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
+else
+    echo -e "${GREEN}Tmux Plugin Manager is already installed.${NC}"
 fi
 
 # Install vim-code-dark theme
 if [[ ! -d "$HOME/.vim/pack/themes/start/vim-code-dark" ]]; then
-    echo "Installing vim-code-dark theme..."
+    echo -e "${YELLOW}Installing vim-code-dark theme...${NC}"
     mkdir -p ~/.vim/pack/themes/start
     cd ~/.vim/pack/themes/start
     git clone https://github.com/tomasiser/vim-code-dark
-    cd "$initial_dir"  # Return to the initial directory
+    cd "$initial_dir"
+else
+    echo -e "${GREEN}vim-code-dark theme is already installed.${NC}"
 fi
 
 # Install GNU Stow
-#
-if command -v stow &> /dev/null
-then
-  echo "Stow already installed"
+if command -v stow &> /dev/null; then
+    echo -e "${GREEN}GNU Stow is already installed.${NC}"
 else
-  echo "Installing GNU Stow..."
-  curl -O http://ftp.gnu.org/gnu/stow/stow-2.4.1.tar.gz
-  tar -xzf stow-2.4.1.tar.gz
-  cd stow-2.4.1
-  ./configure
-  make
-  sudo make install
-  cd "$initial_dir"  # Return to the initial directory
+    echo -e "${YELLOW}Installing GNU Stow...${NC}"
+    curl -O http://ftp.gnu.org/gnu/stow/stow-2.4.1.tar.gz
+    tar -xzf stow-2.4.1.tar.gz
+    cd stow-2.4.1
+    ./configure
+    make
+    sudo make install
+    cd "$initial_dir"
 fi
 
-
-# Run the install script from the initial directory
+# Run the install script if present
 if [[ -x "$initial_dir/install" ]]; then
-    echo "Running install script..."
+    echo -e "${BLUE}Running install script...${NC}"
     "$initial_dir/install"
-    # ensure we adopt for zsh to override the default zshrc
     stow zsh --dotfiles --adopt
 else
-    echo "Install script not found or not executable in $initial_dir"
+    echo -e "${RED}Install script not found or not executable in $initial_dir.${NC}"
 fi
 
-# export it after we adopt
+# Install Tmux plugins
+echo -e "${BLUE}Installing Tmux plugins...${NC}"
+~/.tmux/plugins/tpm/bin/install_plugins
+
+# Export Neovim binary path after setup
 echo export PATH='$PATH:/opt/nvim-linux-x86_64/bin' >> ~/.zshrc
-echo "All tools installed successfully! Restart your terminal for changes to take effect."
+
+echo -e "${GREEN}All tools installed successfully! Restart your terminal for changes to take effect.${NC}"
