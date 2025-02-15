@@ -30,7 +30,7 @@ echo -e "${BLUE}Updating package lists...${NC}"
 sudo apt update && sudo apt upgrade -y
 
 echo -e "${BLUE}Installing dependencies...${NC}"
-sudo apt install -y build-essential curl git unzip rar zsh tmux ripgrep bat exa vim fd-find fonts-powerline locales
+sudo apt install -y build-essential curl git unzip rar zsh tmux ripgrep bat exa vim fd-find fonts-powerline locales less
 
 sudo locale-gen en_US.UTF-8
 # Link bat
