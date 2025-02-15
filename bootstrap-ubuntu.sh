@@ -7,6 +7,8 @@ set -o pipefail  # Fail a pipeline if any command fails
 
 # we usually start off as root so we need to make a liam user
 user=$(whoami)
+initial_dir=$(pwd)
+
 
 if [ "$user" == "liam" ]; then
     echo "Already a liam user"
@@ -23,8 +25,9 @@ echo "Updating package lists..."
 sudo apt update && sudo apt upgrade -y
 
 echo "Installing dependencies..."
-sudo apt install -y build-essential curl git unzip rar zsh tmux fzf ripgrep bat exa vim fd-find
+sudo apt install -y build-essential curl git unzip rar zsh tmux ripgrep bat exa vim fd-find fonts-powerline locales
 
+sudo locale-gen en_US.UTF-8
 # Install latest Neovim
 # if nvim is not installed
 if ! command -v nvim &> /dev/null
@@ -33,7 +36,7 @@ then
   curl -LO https://github.com/neovim/neovim/releases/latest/download/nvim-linux-x86_64.tar.gz
   sudo rm -rf /opt/nvim
   sudo tar -C /opt -xzf nvim-linux-x86_64.tar.gz
-  rm nvim-linux64.tar.gz
+  rm nvim-linux-x86_64.tar.gz
   export PATH="$PATH:/opt/nvim-linux-x86_64/bin"
   echo export PATH='$PATH:/opt/nvim-linux-x86_64/bin' >> ~/.bashrc | tee -a ~/.zshrc
   # test with nvim --version
@@ -46,7 +49,11 @@ if ! command -v uv &> /dev/null
 then
   curl -LsSf https://astral.sh/uv/install.sh | sh
 fi
-
+# install fzf 
+if [[ ! -d "$HOME/.fzf" ]]; then
+  git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf
+  ~/.fzf/install
+fi
 
 # Install and configure Zsh with Oh-My-Zsh
 if [[ ! -d "$HOME/.oh-my-zsh" ]]; then
@@ -55,6 +62,17 @@ if [[ ! -d "$HOME/.oh-my-zsh" ]]; then
     curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh | bash
     chsh -s $(which zsh)
 fi
+# Install ZSH plugins
+ZSH_CUSTOM="${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom/plugins}"
+
+ZSH_CUSTOM="${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom/plugins}"
+
+for plugin in zsh-syntax-highlighting zsh-autosuggestions; do
+    [[ -d "$ZSH_CUSTOM/$plugin" ]] || git clone "https://github.com/zsh-users/$plugin.git" "$ZSH_CUSTOM/$plugin"
+done
+
+[[ -d "$ZSH_CUSTOM/zsh-vi-mode" ]] || git clone "https://github.com/jeffreytse/zsh-vi-mode.git" "$ZSH_CUSTOM/zsh-vi-mode"
+
 
 
 # Install Tmux Plugin Manager (TPM)
@@ -82,8 +100,6 @@ else
   curl -O http://ftp.gnu.org/gnu/stow/stow-2.4.1.tar.gz
   tar -xzf stow-2.4.1.tar.gz
   cd stow-2.4.1
-
-
   ./configure
   make
   sudo make install
@@ -101,4 +117,6 @@ else
     echo "Install script not found or not executable in $initial_dir"
 fi
 
+# export it after we adopt
+echo export PATH='$PATH:/opt/nvim-linux-x86_64/bin' >> ~/.zshrc
 echo "All tools installed successfully! Restart your terminal for changes to take effect."
