@@ -39,7 +39,7 @@ if [[ ! -d "$HOME/.local/bin" ]]; then
   mkdir -p ~/.local/bin
 fi
 
-if [[ ! -x "$HOME/local/bin/bat" ]]; then
+if [[ ! -x "$HOME/.local/bin/bat" ]]; then
   ln -s /usr/bin/batcat ~/.local/bin/bat
 fi
 # Install latest Neovim
