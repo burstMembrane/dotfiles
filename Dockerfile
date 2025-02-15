@@ -4,25 +4,15 @@ FROM ubuntu:latest
 # Set noninteractive mode for apt to avoid prompts
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Update and install required dependencies
-RUN apt update && apt install -y \
-    curl \
-    git \
-    unzip \
-    rar \
-    zsh \
-    tmux \
-    fzf \
-    ripgrep \
-    bat \
-    exa \
-    build-essential
+# setup the liam user and put in the 
+# sudo group
+# expose 443 for the web server
+EXPOSE 443
 
-# Copy the bootstrap script into the container
 COPY ./bootstrap-ubuntu.sh /bootstrap.sh
 
 # Make the script executable and run it
 RUN chmod +x /bootstrap.sh && /bootstrap.sh
-
+USER liam
 # Switch to zsh for testing
 CMD ["/bin/zsh"]
