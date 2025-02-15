@@ -10,7 +10,6 @@ user=$(whoami)
 
 if [ "$user" == "liam" ]; then
     echo "Already a liam user"
-    exit 1
 else
     apt install -y sudo
     sudo useradd -m -s /bin/bash liam
