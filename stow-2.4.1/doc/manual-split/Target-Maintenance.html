@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<!-- Created by GNU Texinfo 7.0.3, https://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<!-- This manual describes GNU Stow version 2.4.1
+(8 September 2024), a program for managing farms of symbolic links.
+
+Software and documentation is copyrighted by the following:
+
+© 1993, 1994, 1995, 1996 Bob Glickstein bobg+stow@zanshin.com
+
+
+© 2000, 2001 Guillaume Morin gmorin@gnu.org
+
+
+© 2007 Kahlil (Kal) Hodgson kahlil@internode.on.net
+
+
+© 2011 Adam Spiers stow@adamspiers.org
+
+Permission is granted to make and distribute verbatim copies of this
+manual provided the copyright notice and this permission notice are
+preserved on all copies.
+
+
+Permission is granted to copy and distribute modified versions of this
+manual under the conditions for verbatim copying, provided also that the
+section entitled "GNU General Public License" is included with the
+modified manual, and provided that the entire resulting derived work is
+distributed under the terms of a permission notice identical to this
+one.
+
+Permission is granted to copy and distribute translations of this manual
+into another language, under the above conditions for modified versions,
+except that this permission notice may be stated in a translation
+approved by the Free Software Foundation. -->
+<title>Target Maintenance (Stow)</title>
+
+<meta name="description" content="Target Maintenance (Stow)">
+<meta name="keywords" content="Target Maintenance (Stow)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<link href="index.html" rel="start" title="Top">
+<link href="Index.html" rel="index" title="Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="index.html" rel="up" title="Top">
+<link href="Resource-Files.html" rel="next" title="Resource Files">
+<link href="Multiple-Stow-Directories.html" rel="prev" title="Multiple Stow Directories">
+<style type="text/css">
+<!--
+div.example {margin-left: 3.2em}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<div class="chapter-level-extent" id="Target-Maintenance">
+<div class="nav-panel">
+<p>
+Next: <a href="Resource-Files.html" accesskey="n" rel="next">Resource Files</a>, Previous: <a href="Multiple-Stow-Directories.html" accesskey="p" rel="prev">Multiple Stow Directories</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<h2 class="chapter" id="Target-Maintenance-1">10 Target Maintenance</h2>
+
+<a class="index-entry-id" id="index-maintenance"></a>
+<p>From time to time you will need to clean up your target tree.  Since
+version 2, Stow provides a new utility <code class="command">chkstow</code> to help with
+this.  It includes three operational modes which performs checks that
+would generally be too expensive to be performed during normal stow
+execution.
+</p>
+<p>The syntax of the <code class="command">chkstow</code> command is:
+</p>
+<div class="example">
+<pre class="example-preformatted">chkstow [<var class="var">options</var>]
+</pre></div>
+
+<p>The following options are supported:
+</p>
+<dl class="table">
+<dt>&lsquo;<samp class="samp">-t <var class="var">dir</var></samp>&rsquo;</dt>
+<dt>&lsquo;<samp class="samp">--target=<var class="var">dir</var></samp>&rsquo;</dt>
+<dd><p>Set the target directory to <var class="var">dir</var> instead of the parent of the stow
+directory.  Defaults to the parent of the stow directory, so it is typical to
+execute <code class="command">stow</code> from the directory <samp class="file">/usr/local/stow</samp>.
+</p>
+</dd>
+<dt>&lsquo;<samp class="samp">-b</samp>&rsquo;</dt>
+<dt>&lsquo;<samp class="samp">--badlinks</samp>&rsquo;</dt>
+<dd><p>Checks target directory for bogus symbolic links. That is, links that point to
+non-existent files.
+</p>
+</dd>
+<dt>&lsquo;<samp class="samp">-a</samp>&rsquo;</dt>
+<dt>&lsquo;<samp class="samp">--aliens</samp>&rsquo;</dt>
+<dd><p>Checks for files in the target directory that are not symbolic links. The
+target directory should be managed by stow alone, except for directories that
+contain a <samp class="file">.stow</samp> file.
+</p>
+</dd>
+<dt>&lsquo;<samp class="samp">-l</samp>&rsquo;</dt>
+<dt>&lsquo;<samp class="samp">--list</samp>&rsquo;</dt>
+<dd><p>Will display the target package for every symbolic link in the stow target
+directory.
+</p>
+</dd>
+</dl>
+
+</div>
+
+
+
+</body>
+</html>

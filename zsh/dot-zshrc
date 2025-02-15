@@ -63,5 +63,6 @@ export FZF_DEFAULT_OPTS=" \
 
 . "$HOME/.local/bin/env"
 export PATH=$PATH:/opt/nvim-linux-x86_64/bin
-export PATH=%PATH:$HOME/.local/bin
+export PATH=$PATH:$HOME/.local/bin
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+export PATH=$PATH:/opt/nvim-linux-x86_64/bin

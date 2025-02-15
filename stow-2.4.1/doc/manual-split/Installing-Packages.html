@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html>
+<!-- Created by GNU Texinfo 7.0.3, https://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<!-- This manual describes GNU Stow version 2.4.1
+(8 September 2024), a program for managing farms of symbolic links.
+
+Software and documentation is copyrighted by the following:
+
+© 1993, 1994, 1995, 1996 Bob Glickstein bobg+stow@zanshin.com
+
+
+© 2000, 2001 Guillaume Morin gmorin@gnu.org
+
+
+© 2007 Kahlil (Kal) Hodgson kahlil@internode.on.net
+
+
+© 2011 Adam Spiers stow@adamspiers.org
+
+Permission is granted to make and distribute verbatim copies of this
+manual provided the copyright notice and this permission notice are
+preserved on all copies.
+
+
+Permission is granted to copy and distribute modified versions of this
+manual under the conditions for verbatim copying, provided also that the
+section entitled "GNU General Public License" is included with the
+modified manual, and provided that the entire resulting derived work is
+distributed under the terms of a permission notice identical to this
+one.
+
+Permission is granted to copy and distribute translations of this manual
+into another language, under the above conditions for modified versions,
+except that this permission notice may be stated in a translation
+approved by the Free Software Foundation. -->
+<title>Installing Packages (Stow)</title>
+
+<meta name="description" content="Installing Packages (Stow)">
+<meta name="keywords" content="Installing Packages (Stow)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<link href="index.html" rel="start" title="Top">
+<link href="Index.html" rel="index" title="Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="index.html" rel="up" title="Top">
+<link href="Deleting-Packages.html" rel="next" title="Deleting Packages">
+<link href="Ignore-Lists.html" rel="prev" title="Ignore Lists">
+
+
+</head>
+
+<body lang="en">
+<div class="chapter-level-extent" id="Installing-Packages">
+<div class="nav-panel">
+<p>
+Next: <a href="Deleting-Packages.html" accesskey="n" rel="next">Deleting Packages</a>, Previous: <a href="Ignore-Lists.html" accesskey="p" rel="prev">Ignore Lists</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<h2 class="chapter" id="Installing-Packages-1">5 Installing Packages</h2>
+
+<a class="index-entry-id" id="index-installation"></a>
+<p>The default action of Stow is to install a package.  This means creating
+symlinks in the target tree that point into the package tree.  Stow
+attempts to do this with as few symlinks as possible; in other words, if
+Stow can create a single symlink that points to an entire subtree within
+the package tree, it will choose to do that rather than create a
+directory in the target tree and populate it with symlinks.
+</p>
+<a class="anchor" id="tree-folding"></a><ul class="mini-toc">
+<li><a href="#Tree-folding" accesskey="1">Tree folding</a></li>
+<li><a href="#Tree-unfolding-1" accesskey="2">Tree unfolding</a></li>
+<li><a href="#Ownership" accesskey="3">Ownership</a></li>
+<li><a href="#Conflicts-during-installation" accesskey="4">Conflicts during installation</a></li>
+</ul>
+<div class="section-level-extent" id="Tree-folding">
+<h3 class="section">5.1 Tree folding</h3>
+<a class="index-entry-id" id="index-tree-folding"></a>
+<a class="index-entry-id" id="index-directory-folding"></a>
+<a class="index-entry-id" id="index-folding-trees"></a>
+<p>For example, suppose that no packages have yet been installed in
+<samp class="file">/usr/local</samp>; it&rsquo;s completely empty (except for the <samp class="file">stow</samp>
+subdirectory, of course).  Now suppose the Perl package is installed.
+Recall that it includes the following directories in its installation
+image:  <samp class="file">bin</samp>; <samp class="file">info</samp>; <samp class="file">lib/perl</samp>; <samp class="file">man/man1</samp>.
+Rather than creating the directory <samp class="file">/usr/local/bin</samp> and populating
+it with symlinks to <samp class="file">../stow/perl/bin/perl</samp> and
+<samp class="file">../stow/perl/bin/a2p</samp> (and so on), Stow will create a
+single symlink, <samp class="file">/usr/local/bin</samp>, which points to
+<samp class="file">stow/perl/bin</samp>.  In this way, it still works to refer to
+<samp class="file">/usr/local/bin/perl</samp> and <samp class="file">/usr/local/bin/a2p</samp>, and fewer
+symlinks have been created.  This is called <em class="dfn">tree folding</em>, since an
+entire subtree is &ldquo;folded&rdquo; into a single symlink.
+</p>
+<p>To complete this example, Stow will also create the symlink
+<samp class="file">/usr/local/info</samp> pointing to <samp class="file">stow/perl/info</samp>; the symlink
+<samp class="file">/usr/local/lib</samp> pointing to <samp class="file">stow/perl/lib</samp>; and the symlink
+<samp class="file">/usr/local/man</samp> pointing to <samp class="file">stow/perl/man</samp>.
+</p>
+<p>Now suppose that instead of installing the Perl package into an empty
+target tree, the target tree is not empty to begin with.  Instead, it
+contains several files and directories installed under a different
+system-administration philosophy.  In particular, <samp class="file">/usr/local/bin</samp>
+already exists and is a directory, as are <samp class="file">/usr/local/lib</samp> and
+<samp class="file">/usr/local/man/man1</samp>.  In this case, Stow will descend into
+<samp class="file">/usr/local/bin</samp> and create symlinks to
+<samp class="file">../stow/perl/bin/perl</samp> and <samp class="file">../stow/perl/bin/a2p</samp> (etc.),
+and it will descend into <samp class="file">/usr/local/lib</samp> and create the
+tree-folding symlink <samp class="file">perl</samp> pointing to
+<samp class="file">../stow/perl/lib/perl</samp>, and so on.  As a rule, Stow only
+descends as far as necessary into the target tree when it can create a
+tree-folding symlink.  However, this behaviour can be changed via
+the <samp class="option">--no-folding</samp> option; see <a class="pxref" href="Invoking-Stow.html">Invoking Stow</a>.
+</p>
+<a class="anchor" id="Tree-unfolding"></a></div>
+<div class="section-level-extent" id="Tree-unfolding-1">
+<h3 class="section">5.2 Tree unfolding</h3>
+<a class="index-entry-id" id="index-splitting-open-folded-trees"></a>
+<a class="index-entry-id" id="index-unfolding-trees"></a>
+<a class="index-entry-id" id="index-tree-unfolding"></a>
+<a class="index-entry-id" id="index-tree-unsplitting"></a>
+<p>The time often comes when a tree-folding symlink has to be undone
+because another package uses one or more of the folded subdirectories in
+its installation image.  This operation is called <em class="dfn">splitting open</em> or
+<em class="dfn">unfolding</em> a folded tree.  It involves removing the original symlink from
+the target tree, creating a true directory in its place, and then populating the
+new directory with symlinks to the newly-installed package <em class="emph">and</em> to
+the old package that used the old symlink.  For example, suppose that
+after installing Perl into an empty <samp class="file">/usr/local</samp>, we wish to
+install Emacs.  Emacs&rsquo;s installation image includes a <samp class="file">bin</samp>
+directory containing the <samp class="file">emacs</samp> and <samp class="file">etags</samp> executables,
+among others.  Stow must make these files appear to be installed
+in <samp class="file">/usr/local/bin</samp>, but presently <samp class="file">/usr/local/bin</samp> is a
+symlink to <samp class="file">stow/perl/bin</samp>.  Stow therefore takes the
+following steps:  the symlink <samp class="file">/usr/local/bin</samp> is deleted; the
+directory <samp class="file">/usr/local/bin</samp> is created; links are made from
+<samp class="file">/usr/local/bin</samp> to <samp class="file">../stow/emacs/bin/emacs</samp> and
+<samp class="file">../stow/emacs/bin/etags</samp>; and links are made from
+<samp class="file">/usr/local/bin</samp> to <samp class="file">../stow/perl/bin/perl</samp> and
+<samp class="file">../stow/perl/bin/a2p</samp>.
+</p>
+</div>
+<div class="section-level-extent" id="Ownership">
+<h3 class="section">5.3 Ownership</h3>
+<a class="index-entry-id" id="index-ownership"></a>
+<p>When splitting open a folded tree, Stow makes sure that the
+symlink it is about to remove points inside a valid package in the
+current stow directory.  <em class="emph">Stow will never delete anything
+that it doesn&rsquo;t own</em>.  Stow &ldquo;owns&rdquo; everything living in the
+target tree that points into a package in the stow directory.  Anything
+Stow owns, it can recompute if lost: symlinks that point into a package in
+the stow directory, or directories that only contain symlinks that stow
+&ldquo;owns&rdquo;.   Note that by this definition, Stow doesn&rsquo;t &ldquo;own&rdquo; anything
+<em class="emph">in</em> the stow directory or in any of the packages.
+</p>
+</div>
+<div class="section-level-extent" id="Conflicts-during-installation">
+<h3 class="section">5.4 Conflicts during installation</h3>
+<a class="index-entry-id" id="index-conflicts"></a>
+<a class="index-entry-id" id="index-installation-conflicts"></a>
+<p>If Stow needs to create a directory or a symlink in the target
+tree and it cannot because that name is already in use and is not owned
+by Stow, then a <em class="dfn">conflict</em> has arisen.  See <a class="xref" href="Conflicts.html">Conflicts</a>.
+</p>
+
+</div>
+</div>
+<hr>
+<div class="nav-panel">
+<p>
+Next: <a href="Deleting-Packages.html">Deleting Packages</a>, Previous: <a href="Ignore-Lists.html">Ignore Lists</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

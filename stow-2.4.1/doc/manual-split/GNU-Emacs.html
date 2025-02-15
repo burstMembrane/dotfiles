@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<!-- Created by GNU Texinfo 7.0.3, https://www.gnu.org/software/texinfo/ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<!-- This manual describes GNU Stow version 2.4.1
+(8 September 2024), a program for managing farms of symbolic links.
+
+Software and documentation is copyrighted by the following:
+
+© 1993, 1994, 1995, 1996 Bob Glickstein bobg+stow@zanshin.com
+
+
+© 2000, 2001 Guillaume Morin gmorin@gnu.org
+
+
+© 2007 Kahlil (Kal) Hodgson kahlil@internode.on.net
+
+
+© 2011 Adam Spiers stow@adamspiers.org
+
+Permission is granted to make and distribute verbatim copies of this
+manual provided the copyright notice and this permission notice are
+preserved on all copies.
+
+
+Permission is granted to copy and distribute modified versions of this
+manual under the conditions for verbatim copying, provided also that the
+section entitled "GNU General Public License" is included with the
+modified manual, and provided that the entire resulting derived work is
+distributed under the terms of a permission notice identical to this
+one.
+
+Permission is granted to copy and distribute translations of this manual
+into another language, under the above conditions for modified versions,
+except that this permission notice may be stated in a translation
+approved by the Free Software Foundation. -->
+<title>GNU Emacs (Stow)</title>
+
+<meta name="description" content="GNU Emacs (Stow)">
+<meta name="keywords" content="GNU Emacs (Stow)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<link href="index.html" rel="start" title="Top">
+<link href="Index.html" rel="index" title="Index">
+<link href="index.html#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="Compile_002dtime-vs_002e-Install_002dtime.html" rel="up" title="Compile-time vs. Install-time">
+<link href="Other-FSF-Software.html" rel="next" title="Other FSF Software">
+<link href="Compile_002dtime-vs_002e-Install_002dtime.html" rel="prev" title="Compile-time vs. Install-time">
+<style type="text/css">
+<!--
+div.example {margin-left: 3.2em}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<div class="section-level-extent" id="GNU-Emacs">
+<div class="nav-panel">
+<p>
+Next: <a href="Other-FSF-Software.html" accesskey="n" rel="next">Other FSF Software</a>, Previous: <a href="Compile_002dtime-vs_002e-Install_002dtime.html" accesskey="p" rel="prev">Compile-time vs. Install-time</a>, Up: <a href="Compile_002dtime-vs_002e-Install_002dtime.html" accesskey="u" rel="up">Compile-time vs. Install-time</a> &nbsp; [<a href="index.html#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Index.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<h3 class="section" id="GNU-Emacs-1">12.2 GNU Emacs</h3>
+
+<p>Although the Free Software Foundation has many enlightened practices
+regarding Makefiles and software installation (see see <a class="pxref" href="Other-FSF-Software.html">Other FSF Software</a>), Emacs, its flagship program, doesn&rsquo;t quite follow the
+rules.  In particular, most GNU software allows you to write:
+</p>
+<div class="example">
+<pre class="example-preformatted">make
+make install prefix=/usr/local/stow/<var class="var">package</var>
+</pre></div>
+
+<p>If you try this with Emacs, then the new value for <var class="var">prefix</var> in the
+&lsquo;<samp class="samp">make install</samp>&rsquo; step will cause some files to get recompiled with
+the new value of <var class="var">prefix</var> wired into them.  In Emacs 19.23 and
+later,<a class="footnote" id="DOCF8" href="#FOOT8"><sup>8</sup></a>
+the way to work around this problem is:
+</p>
+<div class="example">
+<pre class="example-preformatted">make
+make install-arch-dep install-arch-indep prefix=/usr/local/stow/emacs
+</pre></div>
+
+<p>In 19.22 and some prior versions of Emacs, the workaround was:
+</p>
+<div class="example">
+<pre class="example-preformatted">make
+make do-install prefix=/usr/local/stow/emacs
+</pre></div>
+
+</div>
+<div class="footnotes-segment">
+<hr>
+<h4 class="footnotes-heading">Footnotes</h4>
+
+<h5 class="footnote-body-heading"><a id="FOOT8" href="#DOCF8">(8)</a></h5>
+<p>As I write this, the current version of Emacs is 19.31.</p>
+</div>
+
+
+
+</body>
+</html>
