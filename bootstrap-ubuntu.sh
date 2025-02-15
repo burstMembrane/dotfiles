@@ -154,6 +154,7 @@ fi
 if [[ -x "$initial_dir/install" ]]; then
   echo -e "${BLUE}Running install script...${NC}"
   "$initial_dir/install"
+  mv $HOME/.zshrc $HOME/.zshrc.old
   stow zsh --dotfiles --adopt
 else
   echo -e "${RED}Install script not found or not executable in $initial_dir.${NC}"
