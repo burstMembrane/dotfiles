@@ -23,6 +23,7 @@ else
     sudo useradd -m -s /bin/bash liam
     sudo passwd liam
     sudo usermod -aG sudo liam
+    sudo chown -R liam:liam /home/liam
     su - liam
 fi
 
