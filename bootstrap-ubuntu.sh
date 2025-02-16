@@ -61,7 +61,7 @@ if ! command -v nvim &>/dev/null; then
   echo -e "${YELLOW}Installing Neovim...${NC}"
   sudo apt-get install -y software-properties-common
   echo -e "${YELLOW}Adding Neovim PPA...${NC}"
-  sudo add-apt-repository ppa:neovim-ppa/stable -y
+  sudo add-apt-repository ppa:neovim-ppa/unstable -y
   echo -e "${BLUE}Updating package lists...${NC}"
   sudo apt-get update
   echo -e "${YELLOW}Installing Neovim...${NC}"
