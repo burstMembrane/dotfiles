@@ -37,6 +37,7 @@ else
     sudo usermod -aG sudo liam
     sudo chown -R liam:liam /home/liam
     su - liam
+  fi
 fi
 
 echo -e "${BLUE}Updating package lists...${NC}"
