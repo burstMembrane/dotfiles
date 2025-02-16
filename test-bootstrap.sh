@@ -1,9 +1,9 @@
 #!/bin/bash
 
 set -e
-
-echo "Building the Docker image..."
-docker build -t ubuntu-bootstrap-test . --load
+export DOCKER=true
+echo "Building the Docker image with verbose output..."
+docker buildx build --progress=plain --build-arg DOCKER=true -t ubuntu-bootstrap-test . --load
 
 echo "Running the container..."
 docker run --rm ubuntu-bootstrap-test zsh -c "

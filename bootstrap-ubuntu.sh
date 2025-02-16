@@ -14,29 +14,35 @@ export DBIAN_FRONTEND=noninteractive
 # We usually start off as root, so we need to make a 'liam' user
 user=$(whoami)
 initial_dir=$(pwd)
-
-if [ "$user" == "liam" ]; then
-  echo -e "${GREEN}Already using the 'liam' user.${NC}"
+# Check if running in Docker
+if grep -qE '(docker|lxc)' /proc/1/cgroup; then
+  echo -e "${YELLOW}Running in Docker, skipping user creation.${NC}"
 else
-  echo -e "${YELLOW}Creating 'liam' user...${NC}"
-
-  # Check if sudo exists
-  if ! command -v sudo &>/dev/null; then
-    echo -e "${YELLOW}Installing sudo...${NC}"
-    apt-get update && apt-get -y -o Dpkg::Options::="--force-confold" install sudo
+  if [ "$user" == "liam" ]; then
+    echo -e "${GREEN}Already using the 'liam' user.${NC}"
   else
-    echo -e "${GREEN}Sudo is already installed.${NC}"
+    echo -e "${YELLOW}Creating 'liam' user...${NC}"
+
+    # Check if sudo exists
+    if ! command -v sudo &>/dev/null; then
+      echo -e "${YELLOW}Installing sudo...${NC}"
+      apt-get update && apt-get -y -o Dpkg::Options::="--force-confold" install sudo
+    else
+      echo -e "${GREEN}Sudo is already installed.${NC}"
+    fi
+
+    sudo useradd -m -s /bin/bash liam
+
+    # if we're interactive, we can set the password
+    # otherwise, we'll need to set it manually
+    if [ -t 0 ]; then
+      sudo passwd liam
+      sudo usermod -aG sudo liam
+      sudo chown -R liam:liam /home/liam
+      su - liam
+    fi
   fi
 
-  sudo useradd -m -s /bin/bash liam
-
-  # if we're interactive, we can set the password
-  # otherwise, we'll need to set it manually
-  if [ -t 0 ]; then
-    sudo passwd liam
-    sudo usermod -aG sudo liam
-    sudo chown -R liam:liam /home/liam
-    su - liam
 fi
 
 echo -e "${BLUE}Updating package lists...${NC}"
@@ -71,11 +77,16 @@ else
 fi
 
 # Install uv for Python package management
-echo -e "${BLUE}Installing uv...${NC}"
-if ! command -v uv &>/dev/null; then
-  curl -LsSf https://astral.sh/uv/install.sh | sh
+# Skip uv installation in Docker
+if grep -qE '(docker|lxc)' /proc/1/cgroup; then
+  echo -e "${YELLOW}Running in Docker, skipping uv installation.${NC}"
 else
-  echo -e "${GREEN}uv is already installed.${NC}"
+  echo -e "${BLUE}Installing uv...${NC}"
+  if ! command -v uv &>/dev/null; then
+    curl -LsSf https://astral.sh/uv/install.sh | sh
+  else
+    echo -e "${GREEN}uv is already installed.${NC}"
+  fi
 fi
 
 # Install fzf
@@ -166,6 +177,6 @@ echo -e "${BLUE}Installing Tmux plugins...${NC}"
 ~/.tmux/plugins/tpm/bin/install_plugins
 
 # Export Neovim binary path after setup
-echo export PATH='$PATH:/opt/nvim-linux-x86_64/bin' >> ~/.zshrc
+echo export PATH='$PATH:/opt/nvim-linux-x86_64/bin' >>~/.zshrc
 
 echo -e "${GREEN}All tools installed successfully! Restart your terminal for changes to take effect.${NC}"
