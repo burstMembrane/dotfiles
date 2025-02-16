@@ -1,0 +1,11 @@
+#!/bin/bash
+version=$1
+
+if [ -z "$version" ]; then
+  echo "Usage: cogundo <version>"
+  exit 1
+fi
+echo "Undoing version $version"
+git tag --delete $version
+git reset HEAD~
+git reset --hard HEAD

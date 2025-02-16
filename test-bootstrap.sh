@@ -3,7 +3,7 @@
 set -e
 
 echo "Building the Docker image..."
-docker build -t ubuntu-bootstrap-test .
+docker build -t ubuntu-bootstrap-test . --load
 
 echo "Running the container..."
 docker run --rm ubuntu-bootstrap-test zsh -c "
