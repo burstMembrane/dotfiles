@@ -46,7 +46,7 @@ sudo apt-get update && sudo apt upgrade -y
 echo -e "${BLUE}Installing dependencies...${NC}"
 sudo apt-get install -y build-essential curl ca-certificates git unzip rar zsh tmux ripgrep bat vim fd-find fonts-powerline locales less
 
-sudo locale-gen en_US.UTF-8
+sudo locale-gen en_AU.UTF-8
 # Link bat
 
 if [[ ! -d "$HOME/.local/bin" ]]; then
@@ -154,6 +154,7 @@ fi
 if [[ -x "$initial_dir/install" ]]; then
   echo -e "${BLUE}Running install script...${NC}"
   "$initial_dir/install"
+  mv $HOME/.zshrc $HOME/.zshrc.old
   stow zsh --dotfiles --adopt
 else
   echo -e "${RED}Install script not found or not executable in $initial_dir.${NC}"
