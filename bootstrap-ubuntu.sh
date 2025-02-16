@@ -166,6 +166,6 @@ echo -e "${BLUE}Installing Tmux plugins...${NC}"
 ~/.tmux/plugins/tpm/bin/install_plugins
 
 # Export Neovim binary path after setup
-echo export PATH='$PATH:/opt/nvim-linux-x86_64/bin' >>~/.zshrc
+echo export PATH='$PATH:/opt/nvim-linux-x86_64/bin' >> ~/.zshrc
 
 echo -e "${GREEN}All tools installed successfully! Restart your terminal for changes to take effect.${NC}"
