@@ -147,6 +147,8 @@ else
   make
   sudo make install
   cd "$initial_dir"
+  # cleanup
+  rm -rf stow-2.4.1 stow-2.4.1.tar.gz
 fi
 
 # Run the install script if present
