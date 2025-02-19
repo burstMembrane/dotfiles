@@ -3,41 +3,21 @@
 # Allow KSH_VERSION to be unbound for zsh installation
 # set -eo pipefail
 add_to_path() {
-    echo "Adding to PATH: $1"
-    local new_path path_entry
+    local new_path
     new_path=$(realpath -m "$1")  # Ensure absolute path
     if [ ! -d "$new_path" ]; then
         echo "Path does not exist: $new_path"
         return
     fi
 
-    # Check if PATH already contains new_path
-    if [[ ":$PATH:" == *":$new_path:"* ]]; then
-        echo "Path already in PATH: $new_path"
-        return
+    # Create a single PATH entry for shell configs
+    local path_entry="# Added by bootstrap script\nexport PATH=\"$new_path:\$PATH\"\n"
+    
+    # Add to dotfiles zshrc if it doesn't exist
+    if [ -f "$DOTFILES_ZSHRC" ] && ! grep -q "export PATH=\"$new_path:" "$DOTFILES_ZSHRC"; then
+        echo -e "$path_entry" >> "$DOTFILES_ZSHRC"
+        echo "Added to dotfiles zshrc: $new_path"
     fi
-
-    # Create the new PATH entry
-    path_entry="export PATH=\"$new_path:\$PATH\""
-
-    # Add to dotfiles zshrc if not already present
-    if [[ -n "$DOTFILES_ZSHRC" && -f "$DOTFILES_ZSHRC" ]]; then
-        if ! grep -Fxq "$path_entry" "$DOTFILES_ZSHRC"; then
-            echo "$path_entry" >> "$DOTFILES_ZSHRC"
-            echo "Added to DOTFILES_ZSHRC: $new_path"
-        fi
-    fi
-
-    # Update current session
-    export PATH="$new_path:$PATH"
-
-    # Update other shell config files if they exist
-    for rcfile in "$HOME/.bashrc" "$HOME/.profile" "$HOME/.zshrc"; do
-        if [[ -f "$rcfile" ]] && ! grep -Fxq "$path_entry" "$rcfile"; then
-            echo "$path_entry" >> "$rcfile"
-            echo "Added to $rcfile: $new_path"
-        fi
-    done
 }
 
 add_to_shell() {
@@ -161,7 +141,7 @@ yq '.tools | keys[]' bootstrap.yaml | while read -r tool; do
                 add_to_path "$path_entry"
                 
                 # Add to zshrc
-                add_to_dotfiles_zshrc "export PATH=\"$path_entry:\$PATH\""
+                # add_to_dotfiles_zshrc "export PATH=\"$path_entry:\$PATH\""
                 
                 # Verify the path exists
                 if [ -d "$path_entry" ]; then
@@ -207,9 +187,6 @@ done
 
 
 
-# add to paths
-add_to_path "$HOME/.local/bin"
-add_to_dotfiles_zshrc "export PATH=\"\$PATH:$HOME/.local/bin\""
 
 # Check current locale
 echo "Checking current locale settings..."
