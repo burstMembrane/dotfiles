@@ -2,6 +2,58 @@
 
 # Allow KSH_VERSION to be unbound for zsh installation
 set -eo pipefail
+
+
+setup_locale(){
+
+# Set locale variables in ~/.zshrc if not already set
+ZSHRC="$HOME/.zshrc"
+LOCALE_STRING="export LANG=en_AU.UTF-8\nexport LC_ALL=en_US.UTF-8"
+
+if ! grep -q "export LANG=en_AU.UTF-8" "$ZSHRC"; then
+    echo "Adding locale settings to $ZSHRC..."
+    echo -e "\n# Locale settings for Agnoster theme\n$LOCALE_STRING" >> "$ZSHRC"
+else
+    echo "Locale settings already present in $ZSHRC."
+fi
+
+# Apply locale settings to current shell session
+export LANG=en_AU.UTF-8
+export LC_ALL=en_AU.UTF-8
+
+# Generate locale (for Linux)
+if command -v locale-gen &> /dev/null; then
+    echo "Generating locale..."
+    sudo locale-gen en_AU.UTF-8
+fi
+
+# Apply locale changes (Debian/Ubuntu)
+if command -v dpkg-reconfigure &> /dev/null; then
+    echo "Reconfiguring locales..."
+    sudo dpkg-reconfigure --frontend=noninteractive locales
+fi
+
+# Verify locale changes
+echo "Final locale settings:"
+locale
+
+export LANG=en_AU.UTF-8
+export LANGUAGE=en_AU.UTF-8
+export LC_CTYPE=en_AU.UTF-8
+export LC_NUMERIC=en_AU.UTF-8
+export LC_TIME=en_AU.UTF-8
+export LC_COLLATE=en_AU.UTF-8
+export LC_MONETARY=en_AU.UTF-8
+export LC_MESSAGES=en_AU.UTF-8
+export LC_PAPER=en_AU.UTF-8
+export LC_NAME=en_AU.UTF-8
+export LC_ADDRESS=en_AU.UTF-8
+export LC_TELEPHONE=en_AU.UTF-8
+export LC_MEASUREMENT=en_AU.UTF-8
+export LC_IDENTIFICATION=en_AU.UTF-8
+export LC_ALL=en_AU.UTF-8
+
+}
 add_to_path() {
     local new_path
     new_path=$(realpath -m "$1")  # Ensure absolute path
@@ -177,52 +229,6 @@ add_to_path "$HOME/.local/bin"
 echo "Checking current locale settings..."
 locale
 
-# Set locale variables in ~/.zshrc if not already set
-ZSHRC="$HOME/.zshrc"
-LOCALE_STRING="export LANG=en_AU.UTF-8\nexport LC_ALL=en_US.UTF-8"
-
-if ! grep -q "export LANG=en_AU.UTF-8" "$ZSHRC"; then
-    echo "Adding locale settings to $ZSHRC..."
-    echo -e "\n# Locale settings for Agnoster theme\n$LOCALE_STRING" >> "$ZSHRC"
-else
-    echo "Locale settings already present in $ZSHRC."
-fi
-
-# Apply locale settings to current shell session
-export LANG=en_AU.UTF-8
-export LC_ALL=en_AU.UTF-8
-
-# Generate locale (for Linux)
-if command -v locale-gen &> /dev/null; then
-    echo "Generating locale..."
-    sudo locale-gen en_AU.UTF-8
-fi
-
-# Apply locale changes (Debian/Ubuntu)
-if command -v dpkg-reconfigure &> /dev/null; then
-    echo "Reconfiguring locales..."
-    sudo dpkg-reconfigure --frontend=noninteractive locales
-fi
-
-# Verify locale changes
-echo "Final locale settings:"
-locale
-
-export LANG=en_AU.UTF-8
-export LANGUAGE=en_AU.UTF-8
-export LC_CTYPE=en_AU.UTF-8
-export LC_NUMERIC=en_AU.UTF-8
-export LC_TIME=en_AU.UTF-8
-export LC_COLLATE=en_AU.UTF-8
-export LC_MONETARY=en_AU.UTF-8
-export LC_MESSAGES=en_AU.UTF-8
-export LC_PAPER=en_AU.UTF-8
-export LC_NAME=en_AU.UTF-8
-export LC_ADDRESS=en_AU.UTF-8
-export LC_TELEPHONE=en_AU.UTF-8
-export LC_MEASUREMENT=en_AU.UTF-8
-export LC_IDENTIFICATION=en_AU.UTF-8
-export LC_ALL=en_AU.UTF-8
 
 dotfiles_dir="$HOME/dotfiles"
 cd "$dotfiles_dir"
@@ -238,5 +244,7 @@ nvim --headless "+Lazy! sync" +qa
 if [ -x "$HOME/.tmux/plugins/tpm/bin/install_plugins" ]; then
     log "Installing tmux plugins..."
     $HOME/.tmux/plugins/tpm/bin/install_plugins
-
 fi
+
+# Set up locales
+setup_locale
