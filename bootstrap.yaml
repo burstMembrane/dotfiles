@@ -16,44 +16,70 @@ system:
     - less
 
 tools:
-  cryptr:
-    check_command: cryptr
-    install:
-      - git clone https://github.com/nodesocket/cryptr.git
-      - ln -s "$PWD/cryptr/cryptr.bash" "$HOME/.local/bin/cryptr"
+  # cryptr:
+  #   check_command: cryptr
+  #   install:
+  #     - git clone https://github.com/nodesocket/cryptr.git
+  #     - ln -s "$PWD/cryptr/cryptr.bash" "$HOME/.local/bin/cryptr"
   neovim:
     check_command: nvim
     install:
       - curl -LO "https://github.com/neovim/neovim/releases/latest/download/nvim-linux-${ARCH}.tar.gz"
       - sudo mkdir -p "$HOME/.local/bin"
       - sudo tar -C "$HOME/.local/bin" -xzf "nvim-linux-${ARCH}.tar.gz"
-      - add_to_path "$HOME/.local/bin"
+      - mkdir -p "$HOME/.local/bin"
+      - mv "$HOME/.local/bin/nvim-linux-${ARCH}/" "$HOME/.local/bin/nvim-dir"
+      - ln -sf "$HOME/.local/bin/nvim-dir/bin/nvim" "$HOME/.local/bin/nvim"
+    add_to_path:
+      - "$HOME/.local/bin"
     post_install:
       - nvim --version
+    cleanup:
+      - rm nvim-linux-${ARCH}.tar.gz
+
   uv:
     check_command: uv
-    skip_in_docker: true
     install:
       - curl -fsSL https://astral.sh/uv/install.sh | sh
+  # rust:
+  #   check_command: rustc --verion
+  #   install:
+  #     - curl https://sh.rustup.rs  -o rustup-init.sh
+  #     - sudo chmod +x rustup-init.sh
+  #     - ./rustup-init.sh -y
+  #   post_install:
+  #     - rustc --version
+  #   cleanup:
+  #     - rm rustup-init.sh
 
   fzf:
     check_path: "$HOME/.fzf"
     install:
       - git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf
-      - ~/.fzf/install
+      - ~/.fzf/install --all --no-update-rc
+    add_to_path:
+      - "$HOME/.fzf/bin"
     post_install:
-      - fzf --version
+      - "$HOME/.fzf/bin/fzf --version"
+
+  skim:
+    check_path: "$HOME/.skim"
+    install:
+      - git clone --depth 1 https://github.com/lotabout/skim.git ~/.skim
+      - ~/.skim/install
+    add_to_path:
+      - "$HOME/.skim/bin"
+    post_install:
+      - "$HOME/.skim/bin/sk --version"
 
   oh-my-zsh:
     check_path: "$HOME/.oh-my-zsh"
     install:
       - curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh | bash
-    post_install:
-      - chsh -s $(which zsh)
 
   zsh-autosuggestions:
     check_path: "$ZSH_CUSTOM"
-    install: 
+    install:
       - git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions
   zsh-syntax-highlighting:
     check_path: "$ZSH_CUSTOM"
@@ -69,13 +95,15 @@ tools:
     check_path: "$HOME/.tmux/plugins/tpm"
     install:
       - git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
-  
+
   vim_theme:
     check_path: "$HOME/.vim/pack/themes/start/vim-code-dark"
     install:
       - mkdir -p ~/.vim/pack/themes/start
-      - cd ~/.vim/pack/themes/start && git clone https://github.com/tomasiser/vim-code-dark
-
+      - git clone https://github.com/tomasiser/vim-code-dark $HOME/.vim/pack/themes/start/vim-code-dark
+  nvm:
+    install:
+      - curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | sh
   gnu_stow:
     check_command: stow
     install:
@@ -86,12 +114,11 @@ tools:
       - make
       - sudo make install
     cleanup:
-      - cd "$HOME"
+      - cd "$HOME/dotfiles/"
       - rm -rf stow-2.4.1 stow-2.4.1.tar.gz
 
 paths:
   - "$HOME/.local/bin"
-  - "/opt/nvim-linux-${ARCH}/bin"
 
 symlinks:
   - source: /usr/bin/batcat

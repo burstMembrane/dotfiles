@@ -1,189 +1,242 @@
 #!/bin/bash
 
-set -euo pipefail
-# echo commands
-set -x
-# Define color variables
-declare -r GREEN="\e[32m" YELLOW="\e[33m" RED="\e[31m" BLUE="\e[34m" NC="\e[0m"
+# Allow KSH_VERSION to be unbound for zsh installation
+set -eo pipefail
+add_to_path() {
+    local new_path
+    new_path=$(realpath -m "$1")  # Ensure absolute path
+    if [ ! -d "$new_path" ]; then
+        echo "Path does not exist: $new_path"
+        return
+    fi
+
+    # Create a single PATH entry for shell configs
+    local path_entry="# Added by bootstrap script\nif [[ \":\$PATH:\" != *\":$new_path:\"* ]]; then\n  export PATH=\"$new_path:\$PATH\"\nfi"
+    
+    # Add to dotfiles zshrc if it doesn't exist
+    if [ -f "$DOTFILES_ZSHRC" ] && ! grep -q "export PATH=\"$new_path:" "$DOTFILES_ZSHRC"; then
+        echo -e "$path_entry" >> "$DOTFILES_ZSHRC"
+        echo "Added to dotfiles zshrc: $new_path"
+    fi
+
+    # Add to current session PATH if not already present
+    if [[ ":$PATH:" != *":$new_path:"* ]]; then
+        export PATH="$new_path:$PATH"
+        echo "Added to current PATH: $new_path"
+    fi
+}
+
+DOTFILES_ZSHRC="$HOME/dotfiles/zsh/dot-zshrc"
+
+# Install sudo if not present
+if ! command -v sudo &>/dev/null; then
+    apt-get update
+    apt-get install -y sudo
+fi
+
+# Install yq if not present
+if ! command -v yq &>/dev/null; then
+    mkdir -p "$HOME/.local/bin"
+    ARCH=$(uname -m)
+    # Convert architecture name for yq download
+    case "${ARCH}" in
+        aarch64) ARCH="arm64" ;;
+        x86_64)  ARCH="amd64" ;;
+    esac
+    curl -fsSL "https://github.com/mikefarah/yq/releases/latest/download/yq_linux_${ARCH}" -o "$HOME/.local/bin/yq"
+    chmod +x "$HOME/.local/bin/yq"
+    export PATH="$HOME/.local/bin:$PATH"
+fi
 
 # Helper functions
-log() { echo -e "${2:-$BLUE}$1${NC}"; }
-log_success() { log "$1" "$GREEN"; }
-log_warning() { log "$1" "$YELLOW"; }
-log_error() { log "$1" "$RED"; }
+log() { echo -e "\033[1;34m$1\033[0m"; }
+log_success() { echo -e "\033[1;32m$1\033[0m"; }
+log_warning() { echo -e "\033[1;33m$1\033[0m"; }
+log_error() { echo -e "\033[1;31m$1\033[0m"; }
 
-add_to_path() {
-    [[ ":$PATH:" != *":$1:"* ]] && export PATH="$1:$PATH"
-}
+# Install system packages
+log "Installing system packages..."
+packages=$(yq '.system.packages[]' bootstrap.yaml | tr '\n' ' ')
 
-add_to_zshrc() {
-    grep -q "$1" "$HOME/.zshrc" || echo "$1" >> "$HOME/.zshrc"
-}
-
-install_if_missing() {
-    local cmd=$1
-    local msg=${2:-$1}
-    if ! command -v "$cmd" &>/dev/null; then
-        log_warning "Installing $msg..."
-        shift 2
-        "$@"
-    else
-        log_success "$msg is already installed."
-    fi
-}
-
-
-# Check if running in Docker
-if ! grep -qE '(docker|lxc)' /proc/1/cgroup; then
-  if [ "$(whoami)" != "liam" ]; then
-        log_warning "Creating 'liam' user..."
-        
-        # Install sudo if missing
-        if ! command -v sudo &>/dev/null; then
-            log_warning "Installing sudo..."
-            apt-get update
-            apt-get -y -o Dpkg::Options::="--force-confold" install sudo
-        else
-            log_success "sudo is already installed."
-        fi
-
-        sudo useradd -m -s /bin/bash liam
-        if [ -t 0 ]; then
-            sudo passwd liam
-            sudo usermod -aG sudo liam
-            sudo chown -R liam:liam /home/liam
-            su - liam
-        fi
-    else
-        log_success "Already using the 'liam' user."
-    fi
+if [ ! -f /home/liam/.packages_installed ]; then
+    sudo apt-get update
+    sudo apt-get install -y $packages
+    touch /home/liam/.packages_installed
 fi
-# Environment setup
-export DEBIAN_FRONTEND=noninteractive
-readonly ARCH=$(uname -m)
-readonly initial_dir=$(pwd)
-readonly user=$(whoami)
-readonly HOME=/home/liam
-# System updates and base packages
-log "Updating package lists..."
-sudo apt-get update && sudo apt upgrade -y
 
-log "Installing dependencies..."
-sudo apt-get install -y build-essential git wget unzip zsh tmux ripgrep bat curl vim \
-    fd-find fonts-powerline locales less
+# Set locale
+locale=$(yq '.locale' bootstrap.yaml)
+sudo locale-gen "$locale"
 
-sudo locale-gen en_AU.UTF-8
+# Create paths
+while IFS= read -r path; do
+    path=$(eval echo "$path")
+    mkdir -p "$path"
+done < <(yq '.paths[]' bootstrap.yaml)
 
-# Create local bin directory and symlinks
-mkdir -p ~/.local/bin
-[ ! -x "$HOME/.local/bin/bat" ] && ln -s /usr/bin/batcat ~/.local/bin/bat
+# Create symlinks
+yq '.symlinks[]' bootstrap.yaml | while read -r line; do
+    source=$(yq '.source' <(echo "$line"))
+    target=$(yq '.target' <(echo "$line"))
+    target=$(eval echo "$target")
+    ln -sf "$source" "$target"
+done
 
 # Install tools
-if ! command -v cryptr &>/dev/null; then
-    log_warning "Installing cryptr..."
-    git clone https://github.com/nodesocket/cryptr.git && \
-    ln -s "$PWD/cryptr/cryptr.bash" /usr/local/bin/cryptr
-else
-    log_success "cryptr is already installed."
-fi
-
-# Install Neovim
-if ! command -v nvim &>/dev/null; then
-    log_warning "Installing Neovim..."
-    curl -LO "https://github.com/neovim/neovim/releases/latest/download/nvim-linux-$ARCH.tar.gz" && \
-    sudo tar -C /opt -xzf "nvim-linux-$ARCH.tar.gz" && \
-    add_to_path "/opt/nvim-linux-$ARCH/bin" && \
-    nvim --version
-else
-    log_success "Neovim is already installed."
-fi
-
-# Install uv (skip in Docker)
-if ! grep -qE '(docker|lxc)' /proc/1/cgroup; then
-    if ! command -v uv &>/dev/null; then
-        log_warning "Installing uv..."
-        curl -fsSL https://astral.sh/uv/install.sh | sh
-    else
-        log_success "uv is already installed."
+yq '.tools | keys[]' bootstrap.yaml | while read -r tool; do
+    log "Processing $tool..."
+    
+    # Check if tool should be skipped in Docker
+    if [[ -f /.dockerenv ]] && yq ".tools.$tool.skip_in_docker" bootstrap.yaml | grep -q "true"; then
+        log_warning "Skipping $tool in Docker environment"
+        continue
     fi
-fi
 
-# Install fzf
-[ ! -d "$HOME/.fzf" ] && {
-    log_warning "Installing fzf..."
-    git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf && ~/.fzf/install
-} || log_success "fzf is already installed."
+    # Check if tool is already installed
+    if check_cmd=$(yq ".tools.$tool.check_command" bootstrap.yaml) && [ "$check_cmd" != "null" ]; then
+        if command -v "$check_cmd" &>/dev/null; then
+            log_success "$tool is already installed"
+            continue
+        fi
+    fi
 
-# Install Oh-My-Zsh and plugins
-[ ! -d "$HOME/.oh-my-zsh" ] && {
-    log_warning "Installing Oh-My-Zsh..."
-    curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh | bash
-    chsh -s $(which zsh)
-} || log_success "Oh-My-Zsh is already installed."
+    if check_path=$(yq ".tools.$tool.check_path" bootstrap.yaml) && [ "$check_path" != "null" ]; then
+        check_path=$(eval echo "$check_path")
+        if [ -e "$check_path" ]; then
+            log_success "$tool is already installed"
+            continue
+        fi
+    fi
 
-# Install Zsh plugins
-readonly ZSH_CUSTOM="${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom/plugins}"
-for plugin in zsh-syntax-highlighting zsh-autosuggestions zsh-vi-mode; do
-    [ ! -d "$ZSH_CUSTOM/$plugin" ] && {
-        log_warning "Installing ${plugin}..."
-        git clone "https://github.com/${plugin#zsh-vi-mode:jeffreytse/}/$plugin.git" "$ZSH_CUSTOM/$plugin"
-    } || log_success "${plugin} is already installed."
+    # Install tool
+    log_warning "Installing $tool..."
+    yq ".tools.$tool.install[]" bootstrap.yaml | while read -r cmd; do
+        cmd=$(eval echo "$cmd")
+        eval "$cmd"
+    done
+
+    # Add tool-specific paths
+    yq_result=$(yq ".tools.$tool.add_to_path" bootstrap.yaml)
+    if [ "$yq_result" != "null" ]; then
+        yq ".tools.$tool.add_to_path[]" bootstrap.yaml | while read -r path_entry; do
+            if [ ! -z "$path_entry" ]; then
+                # Expand any variables in the path
+                path_entry=$(eval echo "$path_entry")
+                log "Adding $path_entry to PATH..."
+                
+                # Add to current session
+                add_to_path "$path_entry"
+                
+                # Verify the path exists
+                if [ -d "$path_entry" ]; then
+                    log_success "Path $path_entry exists"
+                    ls -la "$path_entry"  # Debug: show directory contents
+                else
+                    log_error "Path $path_entry does not exist!"
+                fi
+            fi
+        done
+    fi
+
+    # Source the updated PATH before running post-install
+    if [ -f "$HOME/.bashrc" ]; then
+        source "$HOME/.bashrc"
+    fi
+
+    # Run post-install commands
+    if [ "$(yq ".tools.$tool.post_install" bootstrap.yaml)" != "null" ]; then
+        yq ".tools.$tool.post_install[]" bootstrap.yaml | while read -r cmd; do
+            if [ ! -z "$cmd" ]; then
+                log "Running post-install command for $tool: $cmd"
+                cmd=$(eval echo "$cmd")
+                # Use full path for commands if they're in ~/.local/bin
+                if [[ "$cmd" == "fzf"* ]]; then
+                    cmd="$HOME/.fzf/bin/$cmd"
+                fi
+                eval "$cmd"
+            fi
+        done
+    fi
+
+    # Run cleanup commands
+    if [ "$(yq ".tools.$tool.cleanup" bootstrap.yaml)" != "null" ]; then
+        yq ".tools.$tool.cleanup[]" bootstrap.yaml | while read -r cmd; do
+            if [ ! -z "$cmd" ]; then
+                log "Running cleanup command for $tool: $cmd"
+                cmd=$(eval echo "$cmd")
+                eval "$cmd"
+            fi
+        done
+    fi
 done
 
-# Install TPM
-[ ! -d "$HOME/.tmux/plugins/tpm" ] && {
-    log_warning "Installing Tmux Plugin Manager..."
-    git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
-} || log_success "Tmux Plugin Manager is already installed."
+# add to paths
+add_to_path "$HOME/.local/bin"
 
-# Install vim-code-dark theme
-[ ! -d "$HOME/.vim/pack/themes/start/vim-code-dark" ] && {
-    log_warning "Installing vim-code-dark theme..."
-    mkdir -p ~/.vim/pack/themes/start
-    (cd ~/.vim/pack/themes/start && git clone https://github.com/tomasiser/vim-code-dark)
-} || log_success "vim-code-dark theme is already installed."
+# Check current locale
+echo "Checking current locale settings..."
+locale
 
-# Install GNU Stow
-if ! command -v stow &>/dev/null; then
-    log_warning "Installing GNU Stow..."
-    curl -fsSL http://ftp.gnu.org/gnu/stow/stow-2.4.1.tar.gz -o stow-2.4.1.tar.gz && \
-    tar -xzf stow-2.4.1.tar.gz && \
-    cd stow-2.4.1 && \
-    ./configure && \
-    make && \
-    sudo make install && \
-    cd "$initial_dir" && \
-    rm -rf stow-2.4.1 stow-2.4.1.tar.gz
+# Set locale variables in ~/.zshrc if not already set
+ZSHRC="$HOME/.zshrc"
+LOCALE_STRING="export LANG=en_AU.UTF-8\nexport LC_ALL=en_US.UTF-8"
+
+if ! grep -q "export LANG=en_AU.UTF-8" "$ZSHRC"; then
+    echo "Adding locale settings to $ZSHRC..."
+    echo -e "\n# Locale settings for Agnoster theme\n$LOCALE_STRING" >> "$ZSHRC"
 else
-    log_success "GNU Stow is already installed."
+    echo "Locale settings already present in $ZSHRC."
 fi
 
-# goback to $HOME/dotfiles
-cd $HOME/dotfiles
-initial_dir=$PWD
+# Apply locale settings to current shell session
+export LANG=en_AU.UTF-8
+export LC_ALL=en_AU.UTF-8
 
-# Run install script if present
-if [ -x "$initial_dir/install" ]; then
+# Generate locale (for Linux)
+if command -v locale-gen &> /dev/null; then
+    echo "Generating locale..."
+    sudo locale-gen en_AU.UTF-8
+fi
+
+# Apply locale changes (Debian/Ubuntu)
+if command -v dpkg-reconfigure &> /dev/null; then
+    echo "Reconfiguring locales..."
+    sudo dpkg-reconfigure --frontend=noninteractive locales
+fi
+
+# Verify locale changes
+echo "Final locale settings:"
+locale
+
+export LANG=en_AU.UTF-8
+export LANGUAGE=en_AU.UTF-8
+export LC_CTYPE=en_AU.UTF-8
+export LC_NUMERIC=en_AU.UTF-8
+export LC_TIME=en_AU.UTF-8
+export LC_COLLATE=en_AU.UTF-8
+export LC_MONETARY=en_AU.UTF-8
+export LC_MESSAGES=en_AU.UTF-8
+export LC_PAPER=en_AU.UTF-8
+export LC_NAME=en_AU.UTF-8
+export LC_ADDRESS=en_AU.UTF-8
+export LC_TELEPHONE=en_AU.UTF-8
+export LC_MEASUREMENT=en_AU.UTF-8
+export LC_IDENTIFICATION=en_AU.UTF-8
+export LC_ALL=en_AU.UTF-8
+
+dotfiles_dir="$HOME/dotfiles"
+cd "$dotfiles_dir"
+# run the install script to install dotfiles
+if [ -f "install" ]; then
     log "Running install script..."
-    "$initial_dir/install"
+    sudo chmod +x "install"
     mv "$HOME/.zshrc" "$HOME/.zshrc.old"
-    stow zsh --dotfiles --adopt
-else
-    log_error "Install script not found or not executable in $initial_dir."
+    ./install
 fi
+# sync nvim plugins
+nvim --headless "+Lazy! sync" +qa
+if [ -x "$HOME/.tmux/plugins/tpm/bin/install_plugins" ]; then
+    log "Installing tmux plugins..."
+    $HOME/.tmux/plugins/tpm/bin/install_plugins
 
-# Install Tmux plugins
-log "Installing Tmux plugins..."
-$HOME/.tmux/plugins/tpm/bin/install_plugins
-
-# Final setup
-add_to_zshrc "export PATH=$PATH:$HOME/.local/bin"
-add_to_zshrc "export PATH=$PATH:$HOME/.local/bin/nvim-linux-$ARCH/bin"  
-
-for tool in nvim uv stow tmux fzf sudo fd-find bat curl vim ripgrep locales less; do
-    if ! command -v "$tool" &>/dev/null; then
-        log_error "$tool is not installed."
-    fi
-done
-
-log_success "All tools installed successfully! Restart your terminal for changes to take effect."
+fi

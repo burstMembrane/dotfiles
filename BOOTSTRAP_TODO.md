@@ -1,6 +1,5 @@
 # BOOTSTRAP 
 
 
-- [ ] Fix agnoster locale formatting
+- [x] Fix agnoster locale formatting
 - [ ] Install skim
-- [ ] fd 
