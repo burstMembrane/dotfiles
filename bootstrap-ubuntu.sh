@@ -1,92 +1,72 @@
 #!/bin/bash
 
 # Allow KSH_VERSION to be unbound for zsh installation
-set -eo pipefail
-
-
-setup_locale(){
-
-# Set locale variables in ~/.zshrc if not already set
-ZSHRC="$HOME/.zshrc"
-LOCALE_STRING="export LANG=en_AU.UTF-8\nexport LC_ALL=en_US.UTF-8"
-
-if ! grep -q "export LANG=en_AU.UTF-8" "$ZSHRC"; then
-    echo "Adding locale settings to $ZSHRC..."
-    echo -e "\n# Locale settings for Agnoster theme\n$LOCALE_STRING" >> "$ZSHRC"
-else
-    echo "Locale settings already present in $ZSHRC."
-fi
-
-# Apply locale settings to current shell session
-export LANG=en_AU.UTF-8
-export LC_ALL=en_AU.UTF-8
-
-# Generate locale (for Linux)
-if command -v locale-gen &> /dev/null; then
-    echo "Generating locale..."
-    sudo locale-gen en_AU.UTF-8
-fi
-
-# Apply locale changes (Debian/Ubuntu)
-if command -v dpkg-reconfigure &> /dev/null; then
-    echo "Reconfiguring locales..."
-    sudo dpkg-reconfigure --frontend=noninteractive locales
-fi
-
-# Verify locale changes
-echo "Final locale settings:"
-locale
-
-export LANG=en_AU.UTF-8
-export LANGUAGE=en_AU.UTF-8
-export LC_CTYPE=en_AU.UTF-8
-export LC_NUMERIC=en_AU.UTF-8
-export LC_TIME=en_AU.UTF-8
-export LC_COLLATE=en_AU.UTF-8
-export LC_MONETARY=en_AU.UTF-8
-export LC_MESSAGES=en_AU.UTF-8
-export LC_PAPER=en_AU.UTF-8
-export LC_NAME=en_AU.UTF-8
-export LC_ADDRESS=en_AU.UTF-8
-export LC_TELEPHONE=en_AU.UTF-8
-export LC_MEASUREMENT=en_AU.UTF-8
-export LC_IDENTIFICATION=en_AU.UTF-8
-export LC_ALL=en_AU.UTF-8
-
-}
+# set -eo pipefail
 add_to_path() {
-    local new_path
+    echo "Adding to PATH: $1"
+    local new_path path_entry
     new_path=$(realpath -m "$1")  # Ensure absolute path
     if [ ! -d "$new_path" ]; then
         echo "Path does not exist: $new_path"
         return
     fi
 
-    # Create a single PATH entry for shell configs
-    local path_entry="# Added by bootstrap script\nif [[ \":\$PATH:\" != *\":$new_path:\"* ]]; then\n  export PATH=\"$new_path:\$PATH\"\nfi"
-    
-    # Add to dotfiles zshrc if it doesn't exist
-    if [ -f "$DOTFILES_ZSHRC" ] && ! grep -q "export PATH=\"$new_path:" "$DOTFILES_ZSHRC"; then
-        echo -e "$path_entry" >> "$DOTFILES_ZSHRC"
-        echo "Added to dotfiles zshrc: $new_path"
+    # Check if PATH already contains new_path
+    if [[ ":$PATH:" == *":$new_path:"* ]]; then
+        echo "Path already in PATH: $new_path"
+        return
     fi
 
-    # Add to current session PATH if not already present
-    if [[ ":$PATH:" != *":$new_path:"* ]]; then
-        export PATH="$new_path:$PATH"
-        echo "Added to current PATH: $new_path"
+    # Create the new PATH entry
+    path_entry="export PATH=\"$new_path:\$PATH\""
+
+    # Add to dotfiles zshrc if not already present
+    if [[ -n "$DOTFILES_ZSHRC" && -f "$DOTFILES_ZSHRC" ]]; then
+        if ! grep -Fxq "$path_entry" "$DOTFILES_ZSHRC"; then
+            echo "$path_entry" >> "$DOTFILES_ZSHRC"
+            echo "Added to DOTFILES_ZSHRC: $new_path"
+        fi
+    fi
+
+    # Update current session
+    export PATH="$new_path:$PATH"
+
+    # Update other shell config files if they exist
+    for rcfile in "$HOME/.bashrc" "$HOME/.profile" "$HOME/.zshrc"; do
+        if [[ -f "$rcfile" ]] && ! grep -Fxq "$path_entry" "$rcfile"; then
+            echo "$path_entry" >> "$rcfile"
+            echo "Added to $rcfile: $new_path"
+        fi
+    done
+}
+
+add_to_shell() {
+    local entry="$1"
+
+    echo "Adding to shell: $entry"
+    
+    if [ -f "$DOTFILES_ZSHRC" ] && ! grep -F -q "$entry" "$DOTFILES_ZSHRC"; then
+        echo -e "\n# Added by bootstrap script\n$entry" >> "$DOTFILES_ZSHRC"
+        echo "Added to shell config: $entry"
     fi
 }
 
-DOTFILES_ZSHRC="$HOME/dotfiles/zsh/dot-zshrc"
 
-# Install sudo if not present
+DOTFILES_ZSHRC="$HOME/dotfiles/zsh/dot-zshrc"
+add_to_dotfiles_zshrc() {
+    local entry="$1"
+    entry=$(eval echo "$entry")
+    if ! grep -q "$entry" "$DOTFILES_ZSHRC"; then
+        echo "$entry" >> "$DOTFILES_ZSHRC"
+        echo "Added to zshrc: $entry"
+    fi
+}
+
 if ! command -v sudo &>/dev/null; then
     apt-get update
     apt-get install -y sudo
 fi
 
-# Install yq if not present
 if ! command -v yq &>/dev/null; then
     mkdir -p "$HOME/.local/bin"
     ARCH=$(uname -m)
@@ -100,23 +80,24 @@ if ! command -v yq &>/dev/null; then
     export PATH="$HOME/.local/bin:$PATH"
 fi
 
-# Helper functions
 log() { echo -e "\033[1;34m$1\033[0m"; }
 log_success() { echo -e "\033[1;32m$1\033[0m"; }
 log_warning() { echo -e "\033[1;33m$1\033[0m"; }
 log_error() { echo -e "\033[1;31m$1\033[0m"; }
 
-# Install system packages
 log "Installing system packages..."
 packages=$(yq '.system.packages[]' bootstrap.yaml | tr '\n' ' ')
 
-if [ ! -f /home/liam/.packages_installed ]; then
+if [ ! -f /home/liam/.packages_installed ] || ! diff <(echo "$packages" | tr ' ' '\n' | sort) <(sort /home/liam/.packages_installed) >/dev/null; then
+    # show the different packages 
+    echo "The following packages will be installed:"
+    echo "$packages"
     sudo apt-get update
     sudo apt-get install -y $packages
-    touch /home/liam/.packages_installed
+    # Save the list of packages to the file
+    echo "$packages" | tr ' ' '\n' > /home/liam/.packages_installed
 fi
 
-# Set locale
 locale=$(yq '.locale' bootstrap.yaml)
 sudo locale-gen "$locale"
 
@@ -179,6 +160,9 @@ yq '.tools | keys[]' bootstrap.yaml | while read -r tool; do
                 # Add to current session
                 add_to_path "$path_entry"
                 
+                # Add to zshrc
+                add_to_dotfiles_zshrc "export PATH=\"$path_entry:\$PATH\""
+                
                 # Verify the path exists
                 if [ -d "$path_entry" ]; then
                     log_success "Path $path_entry exists"
@@ -189,22 +173,19 @@ yq '.tools | keys[]' bootstrap.yaml | while read -r tool; do
             fi
         done
     fi
-
-    # Source the updated PATH before running post-install
-    if [ -f "$HOME/.bashrc" ]; then
-        source "$HOME/.bashrc"
+    if [ "$(yq ".tools.$tool.add_to_shell" bootstrap.yaml)" != "null" ]; then
+        yq ".tools.$tool.add_to_shell[]" bootstrap.yaml | while read -r entry; do
+            if [ ! -z "$entry" ]; then
+                add_to_shell "$entry"
+            fi
+        done
     fi
-
     # Run post-install commands
     if [ "$(yq ".tools.$tool.post_install" bootstrap.yaml)" != "null" ]; then
         yq ".tools.$tool.post_install[]" bootstrap.yaml | while read -r cmd; do
             if [ ! -z "$cmd" ]; then
                 log "Running post-install command for $tool: $cmd"
                 cmd=$(eval echo "$cmd")
-                # Use full path for commands if they're in ~/.local/bin
-                if [[ "$cmd" == "fzf"* ]]; then
-                    cmd="$HOME/.fzf/bin/$cmd"
-                fi
                 eval "$cmd"
             fi
         done
@@ -222,13 +203,64 @@ yq '.tools | keys[]' bootstrap.yaml | while read -r tool; do
     fi
 done
 
+
+
+
+
 # add to paths
 add_to_path "$HOME/.local/bin"
+add_to_dotfiles_zshrc "export PATH=\"\$PATH:$HOME/.local/bin\""
 
 # Check current locale
 echo "Checking current locale settings..."
 locale
 
+# Set locale variables in ~/.zshrc if not already set
+ZSHRC="$HOME/.zshrc"
+LOCALE_STRING="export LANG=en_AU.UTF-8\nexport LC_ALL=en_US.UTF-8"
+
+if ! grep -q "export LANG=en_AU.UTF-8" "$ZSHRC"; then
+    echo "Adding locale settings to $ZSHRC..."
+    echo -e "\n# Locale settings for Agnoster theme\n$LOCALE_STRING" >> "$ZSHRC"
+else
+    echo "Locale settings already present in $ZSHRC."
+fi
+
+# Apply locale settings to current shell session
+export LANG=en_AU.UTF-8
+export LC_ALL=en_AU.UTF-8
+
+# Generate locale (for Linux)
+if command -v locale-gen &> /dev/null; then
+    echo "Generating locale..."
+    sudo locale-gen en_AU.UTF-8
+fi
+
+# Apply locale changes (Debian/Ubuntu)
+if command -v dpkg-reconfigure &> /dev/null; then
+    echo "Reconfiguring locales..."
+    sudo dpkg-reconfigure --frontend=noninteractive locales
+fi
+
+# Verify locale changes
+echo "Final locale settings:"
+locale
+
+export LANG=en_AU.UTF-8
+export LANGUAGE=en_AU.UTF-8
+export LC_CTYPE=en_AU.UTF-8
+export LC_NUMERIC=en_AU.UTF-8
+export LC_TIME=en_AU.UTF-8
+export LC_COLLATE=en_AU.UTF-8
+export LC_MONETARY=en_AU.UTF-8
+export LC_MESSAGES=en_AU.UTF-8
+export LC_PAPER=en_AU.UTF-8
+export LC_NAME=en_AU.UTF-8
+export LC_ADDRESS=en_AU.UTF-8
+export LC_TELEPHONE=en_AU.UTF-8
+export LC_MEASUREMENT=en_AU.UTF-8
+export LC_IDENTIFICATION=en_AU.UTF-8
+export LC_ALL=en_AU.UTF-8
 
 dotfiles_dir="$HOME/dotfiles"
 cd "$dotfiles_dir"
@@ -246,5 +278,4 @@ if [ -x "$HOME/.tmux/plugins/tpm/bin/install_plugins" ]; then
     $HOME/.tmux/plugins/tpm/bin/install_plugins
 fi
 
-# Set up locales
-setup_locale
+log "Bootstrap script completed successfully!"

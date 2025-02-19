@@ -1,12 +1,8 @@
 # Use a specific version for better reproducibility
 FROM ubuntu:latest
 
-# Combine all ENV statements to reduce layers
-ENV DEBIAN_FRONTEND=noninteractive \
-    PATH="/usr/local/bin:${PATH}"
-
-# Install essential packages in a single layer
-RUN apt-get update && apt-get install -y \
+# Define build argument for packages
+ARG PACKAGES="\
     curl \
     sudo \
     build-essential \
@@ -17,12 +13,23 @@ RUN apt-get update && apt-get install -y \
     tmux \
     ripgrep \
     bat \
-    curl \
     vim \
     fd-find \
     fonts-powerline \
     locales \
-    less \      
+    less \
+    python3 \
+    python3-pip \
+    python-is-python3 \
+    dpkg \
+    apt-utils" 
+
+# Combine all ENV statements to reduce layers
+ENV DEBIAN_FRONTEND=noninteractive \
+    PATH="/usr/local/bin:${PATH}"
+
+# Install essential packages in a single layer
+RUN apt-get update && apt-get install -y ${PACKAGES} \
     && rm -rf /var/lib/apt/lists/*
 
 # Create non-root user
@@ -35,8 +42,8 @@ RUN useradd -m -s /bin/bash liam \
 USER liam
 WORKDIR /home/liam
 
-# Create marker file for package installation tracking
-RUN touch /home/liam/.packages_installed
+# Save package list to file
+RUN echo "${PACKAGES}" | tr ' ' '\n' | grep -v '^$' > /home/liam/.packages_installed
 
 # Copy all files at once to avoid cache invalidation
 COPY --chown=liam:liam . /home/liam/dotfiles/

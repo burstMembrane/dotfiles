@@ -1,5 +1,6 @@
 system:
   packages:
+    - sudo
     - build-essential
     - git
     - wget
@@ -14,13 +15,13 @@ system:
     - fonts-powerline
     - locales
     - less
+    - python3
+    - python3-pip
+    - python-is-python3
+    - dpkg 
+    - apt-utils
 
 tools:
-  # cryptr:
-  #   check_command: cryptr
-  #   install:
-  #     - git clone https://github.com/nodesocket/cryptr.git
-  #     - ln -s "$PWD/cryptr/cryptr.bash" "$HOME/.local/bin/cryptr"
   neovim:
     check_command: nvim
     install:
@@ -41,6 +42,12 @@ tools:
     check_command: uv
     install:
       - curl -fsSL https://astral.sh/uv/install.sh | sh
+  zoxide:
+    check_command: zoxide --version
+    install:
+    - '[ "$(uname -m)" = "arm64" ] && curl -sSfL https://raw.githubusercontent.com/ajeetdsouza/zoxide/main/install.sh | sh -s -- --arch aarch64-unknown-linux-musl || curl -sSfL https://raw.githubusercontent.com/ajeetdsouza/zoxide/main/install.sh | sh'
+    add_to_shell:
+      - eval "$(zoxide init zsh)"
   # rust:
   #   check_command: rustc --verion
   #   install:
@@ -69,6 +76,9 @@ tools:
       - ~/.skim/install
     add_to_path:
       - "$HOME/.skim/bin"
+    add_to_shell:
+      - "[ -f ~/.skim/shell/key-bindings.zsh ] && source ~/.skim/shell/key-bindings.zsh"
+      - "[ -f ~/.skim/shell/completion.zsh ] && source ~/.skim/shell/completion.zsh"
     post_install:
       - "$HOME/.skim/bin/sk --version"
 
@@ -104,18 +114,24 @@ tools:
   nvm:
     install:
       - curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | sh
+    add_to_shell:
+      - 'export NVM_DIR="$HOME/.nvm"'
+      - '[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"'
+      - '[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"'
   gnu_stow:
     check_command: stow
     install:
+      - export INITIAL_DIR=$(pwd)
+      - cd /tmp
       - curl -fsSL http://ftp.gnu.org/gnu/stow/stow-2.4.1.tar.gz -o stow-2.4.1.tar.gz
       - tar -xzf stow-2.4.1.tar.gz
       - cd stow-2.4.1
       - ./configure
       - make
       - sudo make install
+      - cd "$INITIAL_DIR"
     cleanup:
-      - cd "$HOME/dotfiles/"
-      - rm -rf stow-2.4.1 stow-2.4.1.tar.gz
+      - rm -rf /tmp/stow-2.4.1 /tmp/stow-2.4.1.tar.gz
 
 paths:
   - "$HOME/.local/bin"
