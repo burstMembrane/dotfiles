@@ -1,0 +1,53 @@
+# Use a specific version for better reproducibility
+FROM ubuntu:latest
+
+# Combine all ENV statements to reduce layers
+ENV DEBIAN_FRONTEND=noninteractive \
+    PATH="/usr/local/bin:${PATH}"
+
+# Install essential packages in a single layer
+RUN apt-get update && apt-get install -y \
+    curl \
+    sudo \
+    build-essential \
+    git \
+    wget \
+    unzip \
+    zsh \
+    tmux \
+    ripgrep \
+    bat \
+    curl \
+    vim \
+    fd-find \
+    fonts-powerline \
+    locales \
+    less \      
+    && rm -rf /var/lib/apt/lists/*
+
+# Create non-root user
+RUN useradd -m -s /bin/bash liam \
+    && echo "liam ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers  \
+    && sudo mkdir -p /opt \
+    && sudo chown -R liam:liam /opt
+
+# Switch to non-root user for security
+USER liam
+WORKDIR /home/liam
+
+# Copy bootstrap files with correct ownership
+COPY --chown=liam:liam bootstrap.yaml bootstrap.sh ./
+RUN touch /home/liam/.packages_installed
+# Make script executable and run bootstrap
+COPY . /home/liam/dotfiles
+RUN sudo chown -R liam:liam /home/liam/
+RUN chmod +x bootstrap.sh && ./bootstrap.sh
+# Set the locale
+
+RUN sudo sed -i '/en_AU.UTF-8/s/^# //g' /etc/locale.gen && \
+    locale-gen
+ENV LANG=en_AU.UTF-8 LANGUAGE=en_AU:en LC_ALL=en_AU.UTF-8
+# Set zsh as default shell
+SHELL ["/bin/zsh", "-c"]
+# Default command when container starts
+CMD ["/bin/zsh"]

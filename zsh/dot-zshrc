@@ -26,7 +26,6 @@ zsh-vi-mode
 # oh my zsh
 source $ZSH/oh-my-zsh.sh
 
-# User configuration
 
 #Preferred editor for local and remote sessions
 if [[ -n $SSH_CONNECTION ]]; then
@@ -47,12 +46,10 @@ alias bunx="bun x"
 alias c="cargo"
 alias faf="fzf --preview='bat --color=always --style=plain {}'"
 # add alias cat to bat
-alias cat="bat"
-alias ls="exa"  
-# Add colors to Terminal
+alias cat="bat" # Add colors to Terminal
 export CLICOLOR=1
 export LSCOLORS=ExFxBxDxCxegedabagacad
-
+alias fd="fdfind"
 export FZF_DEFAULT_OPTS=" \
 --color=bg+:#1e1e1e,bg:#000000,spinner:#d7ba7d,hl:#569cd6 \
 --color=fg:#d4d4d4,header:#569cd6,info:#9cdcfe,pointer:#d7ba7d \
@@ -60,10 +57,6 @@ export FZF_DEFAULT_OPTS=" \
 --multi
 --tmux
 "
-
-. "$HOME/.local/bin/env"
-export PATH=$PATH:/opt/nvim-linux-x86_64/bin
 export PATH=$PATH:$HOME/.local/bin
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
-export PATH=$PATH:/opt/nvim-linux-x86_64/bin
-export PATH=$PATH:/opt/nvim-linux-x86_64/bin
+

@@ -1,197 +1,189 @@
 #!/bin/bash
 
-set -e          # Exit immediately if a command exits with a non-zero status
-set -u          # Treat unset variables as an error
-set -o pipefail # Fail a pipeline if any command fails
-
+set -euo pipefail
+# echo commands
+set -x
 # Define color variables
-GREEN="\e[32m"
-YELLOW="\e[33m"
-RED="\e[31m"
-BLUE="\e[34m"
-NC="\e[0m" # No color
-export DBIAN_FRONTEND=noninteractive
-# We usually start off as root, so we need to make a 'liam' user
-user=$(whoami)
-initial_dir=$(pwd)
-# Check if running in Docker
-if grep -qE '(docker|lxc)' /proc/1/cgroup; then
-  echo -e "${YELLOW}Running in Docker, skipping user creation.${NC}"
-else
-  if [ "$user" == "liam" ]; then
-    echo -e "${GREEN}Already using the 'liam' user.${NC}"
-  else
-    echo -e "${YELLOW}Creating 'liam' user...${NC}"
+declare -r GREEN="\e[32m" YELLOW="\e[33m" RED="\e[31m" BLUE="\e[34m" NC="\e[0m"
 
-    # Check if sudo exists
-    if ! command -v sudo &>/dev/null; then
-      echo -e "${YELLOW}Installing sudo...${NC}"
-      apt-get update && apt-get -y -o Dpkg::Options::="--force-confold" install sudo
+# Helper functions
+log() { echo -e "${2:-$BLUE}$1${NC}"; }
+log_success() { log "$1" "$GREEN"; }
+log_warning() { log "$1" "$YELLOW"; }
+log_error() { log "$1" "$RED"; }
+
+add_to_path() {
+    [[ ":$PATH:" != *":$1:"* ]] && export PATH="$1:$PATH"
+}
+
+add_to_zshrc() {
+    grep -q "$1" "$HOME/.zshrc" || echo "$1" >> "$HOME/.zshrc"
+}
+
+install_if_missing() {
+    local cmd=$1
+    local msg=${2:-$1}
+    if ! command -v "$cmd" &>/dev/null; then
+        log_warning "Installing $msg..."
+        shift 2
+        "$@"
     else
-      echo -e "${GREEN}Sudo is already installed.${NC}"
+        log_success "$msg is already installed."
     fi
+}
 
-    sudo useradd -m -s /bin/bash liam
 
-    # if we're interactive, we can set the password
-    # otherwise, we'll need to set it manually
-    if [ -t 0 ]; then
-      sudo passwd liam
-      sudo usermod -aG sudo liam
-      sudo chown -R liam:liam /home/liam
-      su - liam
+# Check if running in Docker
+if ! grep -qE '(docker|lxc)' /proc/1/cgroup; then
+  if [ "$(whoami)" != "liam" ]; then
+        log_warning "Creating 'liam' user..."
+        
+        # Install sudo if missing
+        if ! command -v sudo &>/dev/null; then
+            log_warning "Installing sudo..."
+            apt-get update
+            apt-get -y -o Dpkg::Options::="--force-confold" install sudo
+        else
+            log_success "sudo is already installed."
+        fi
+
+        sudo useradd -m -s /bin/bash liam
+        if [ -t 0 ]; then
+            sudo passwd liam
+            sudo usermod -aG sudo liam
+            sudo chown -R liam:liam /home/liam
+            su - liam
+        fi
+    else
+        log_success "Already using the 'liam' user."
     fi
-  fi
-
 fi
-
-echo -e "${BLUE}Updating package lists...${NC}"
+# Environment setup
+export DEBIAN_FRONTEND=noninteractive
+readonly ARCH=$(uname -m)
+readonly initial_dir=$(pwd)
+readonly user=$(whoami)
+readonly HOME=/home/liam
+# System updates and base packages
+log "Updating package lists..."
 sudo apt-get update && sudo apt upgrade -y
 
-echo -e "${BLUE}Installing dependencies...${NC}"
-sudo apt-get install -y \
-  build-essential \
-  git \
-  wget \
-  unzip \
-  rar \
-  zsh \
-  tmux \
-  ripgrep \
-  bat \
-  vim \
-  fd-find \
-  fonts-powerline \
-  locales \
-  less
-# setuup ca ca-certificates
-# sudo update-ca-certificates
+log "Installing dependencies..."
+sudo apt-get install -y build-essential git wget unzip zsh tmux ripgrep bat curl vim \
+    fd-find fonts-powerline locales less
+
 sudo locale-gen en_AU.UTF-8
-# Link bat
 
-if [[ ! -d "$HOME/.local/bin" ]]; then
-  mkdir -p ~/.local/bin
+# Create local bin directory and symlinks
+mkdir -p ~/.local/bin
+[ ! -x "$HOME/.local/bin/bat" ] && ln -s /usr/bin/batcat ~/.local/bin/bat
+
+# Install tools
+if ! command -v cryptr &>/dev/null; then
+    log_warning "Installing cryptr..."
+    git clone https://github.com/nodesocket/cryptr.git && \
+    ln -s "$PWD/cryptr/cryptr.bash" /usr/local/bin/cryptr
+else
+    log_success "cryptr is already installed."
 fi
 
-if [[ ! -x "$HOME/.local/bin/bat" ]]; then
-  ln -s /usr/bin/batcat ~/.local/bin/bat
-fi
-# Install latest Neovim
+# Install Neovim
 if ! command -v nvim &>/dev/null; then
-  echo -e "${YELLOW}Installing Neovim...${NC}"
-  sudo apt-get install -y software-properties-common
-  echo -e "${YELLOW}Adding Neovim PPA...${NC}"
-  sudo add-apt-repository ppa:neovim-ppa/unstable -y
-  echo -e "${BLUE}Updating package lists...${NC}"
-  sudo apt-get update
-  echo -e "${YELLOW}Installing Neovim...${NC}"
-  sudo apt-get install -y neovim
-  nvim --version
+    log_warning "Installing Neovim..."
+    curl -LO "https://github.com/neovim/neovim/releases/latest/download/nvim-linux-$ARCH.tar.gz" && \
+    sudo tar -C /opt -xzf "nvim-linux-$ARCH.tar.gz" && \
+    add_to_path "/opt/nvim-linux-$ARCH/bin" && \
+    nvim --version
 else
-  echo -e "${GREEN}Neovim is already installed.${NC}"
+    log_success "Neovim is already installed."
 fi
 
-# Install uv for Python package management
-# Skip uv installation in Docker
-if grep -qE '(docker|lxc)' /proc/1/cgroup; then
-  echo -e "${YELLOW}Running in Docker, skipping uv installation.${NC}"
-else
-  echo -e "${BLUE}Installing uv...${NC}"
-  if ! command -v uv &>/dev/null; then
-    wget --timeout=30 --no-check-certificate -qO- https://astral.sh/uv/install.sh | sh
-  else
-    echo -e "${GREEN}uv is already installed.${NC}"
-  fi
+# Install uv (skip in Docker)
+if ! grep -qE '(docker|lxc)' /proc/1/cgroup; then
+    if ! command -v uv &>/dev/null; then
+        log_warning "Installing uv..."
+        curl -fsSL https://astral.sh/uv/install.sh | sh
+    else
+        log_success "uv is already installed."
+    fi
 fi
 
 # Install fzf
-if [[ ! -d "$HOME/.fzf" ]]; then
-  echo -e "${YELLOW}Installing fzf...${NC}"
-  git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf
-  ~/.fzf/install
-else
-  echo -e "${GREEN}fzf is already installed.${NC}"
-fi
+[ ! -d "$HOME/.fzf" ] && {
+    log_warning "Installing fzf..."
+    git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf && ~/.fzf/install
+} || log_success "fzf is already installed."
 
-# Install and configure Zsh with Oh-My-Zsh
-if [[ ! -d "$HOME/.oh-my-zsh" ]]; then
-  echo -e "${YELLOW}Installing Oh-My-Zsh...${NC}"
-  sudo apt-get install -y zsh
-  wget --timeout=30 --no-check-certificate -qO- https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh | bash
-  chsh -s $(which zsh)
-else
-  echo -e "${GREEN}Oh-My-Zsh is already installed.${NC}"
-fi
+# Install Oh-My-Zsh and plugins
+[ ! -d "$HOME/.oh-my-zsh" ] && {
+    log_warning "Installing Oh-My-Zsh..."
+    curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh | bash
+    chsh -s $(which zsh)
+} || log_success "Oh-My-Zsh is already installed."
 
 # Install Zsh plugins
-ZSH_CUSTOM="${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom/plugins}"
-
-for plugin in zsh-syntax-highlighting zsh-autosuggestions; do
-  if [[ ! -d "$ZSH_CUSTOM/$plugin" ]]; then
-    echo -e "${YELLOW}Installing ${plugin}...${NC}"
-    git clone "https://github.com/zsh-users/$plugin.git" "$ZSH_CUSTOM/$plugin"
-  else
-    echo -e "${GREEN}${plugin} is already installed.${NC}"
-  fi
+readonly ZSH_CUSTOM="${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom/plugins}"
+for plugin in zsh-syntax-highlighting zsh-autosuggestions zsh-vi-mode; do
+    [ ! -d "$ZSH_CUSTOM/$plugin" ] && {
+        log_warning "Installing ${plugin}..."
+        git clone "https://github.com/${plugin#zsh-vi-mode:jeffreytse/}/$plugin.git" "$ZSH_CUSTOM/$plugin"
+    } || log_success "${plugin} is already installed."
 done
 
-if [[ ! -d "$ZSH_CUSTOM/zsh-vi-mode" ]]; then
-  echo -e "${YELLOW}Installing zsh-vi-mode...${NC}"
-  git clone "https://github.com/jeffreytse/zsh-vi-mode.git" "$ZSH_CUSTOM/zsh-vi-mode"
-else
-  echo -e "${GREEN}zsh-vi-mode is already installed.${NC}"
-fi
-
-# Install Tmux Plugin Manager (TPM)
-if [[ ! -d "$HOME/.tmux/plugins/tpm" ]]; then
-  echo -e "${YELLOW}Installing Tmux Plugin Manager (TPM)...${NC}"
-  git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
-else
-  echo -e "${GREEN}Tmux Plugin Manager is already installed.${NC}"
-fi
+# Install TPM
+[ ! -d "$HOME/.tmux/plugins/tpm" ] && {
+    log_warning "Installing Tmux Plugin Manager..."
+    git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
+} || log_success "Tmux Plugin Manager is already installed."
 
 # Install vim-code-dark theme
-if [[ ! -d "$HOME/.vim/pack/themes/start/vim-code-dark" ]]; then
-  echo -e "${YELLOW}Installing vim-code-dark theme...${NC}"
-  mkdir -p ~/.vim/pack/themes/start
-  cd ~/.vim/pack/themes/start
-  git clone https://github.com/tomasiser/vim-code-dark
-  cd "$initial_dir"
-else
-  echo -e "${GREEN}vim-code-dark theme is already installed.${NC}"
-fi
+[ ! -d "$HOME/.vim/pack/themes/start/vim-code-dark" ] && {
+    log_warning "Installing vim-code-dark theme..."
+    mkdir -p ~/.vim/pack/themes/start
+    (cd ~/.vim/pack/themes/start && git clone https://github.com/tomasiser/vim-code-dark)
+} || log_success "vim-code-dark theme is already installed."
 
 # Install GNU Stow
-if command -v stow &>/dev/null; then
-  echo -e "${GREEN}GNU Stow is already installed.${NC}"
+if ! command -v stow &>/dev/null; then
+    log_warning "Installing GNU Stow..."
+    curl -fsSL http://ftp.gnu.org/gnu/stow/stow-2.4.1.tar.gz -o stow-2.4.1.tar.gz && \
+    tar -xzf stow-2.4.1.tar.gz && \
+    cd stow-2.4.1 && \
+    ./configure && \
+    make && \
+    sudo make install && \
+    cd "$initial_dir" && \
+    rm -rf stow-2.4.1 stow-2.4.1.tar.gz
 else
-  echo -e "${YELLOW}Installing GNU Stow...${NC}"
-  wget --timeout=30 http://ftp.gnu.org/gnu/stow/stow-2.4.1.tar.gz
-  tar -xzf stow-2.4.1.tar.gz
-  cd stow-2.4.1
-  ./configure
-  make
-  sudo make install
-  cd "$initial_dir"
-  # cleanup
-  rm -rf stow-2.4.1 stow-2.4.1.tar.gz
+    log_success "GNU Stow is already installed."
 fi
 
-# Run the install script if present
-if [[ -x "$initial_dir/install" ]]; then
-  echo -e "${BLUE}Running install script...${NC}"
-  "$initial_dir/install"
-  mv $HOME/.zshrc $HOME/.zshrc.old
-  stow zsh --dotfiles --adopt
+# goback to $HOME/dotfiles
+cd $HOME/dotfiles
+initial_dir=$PWD
+
+# Run install script if present
+if [ -x "$initial_dir/install" ]; then
+    log "Running install script..."
+    "$initial_dir/install"
+    mv "$HOME/.zshrc" "$HOME/.zshrc.old"
+    stow zsh --dotfiles --adopt
 else
-  echo -e "${RED}Install script not found or not executable in $initial_dir.${NC}"
+    log_error "Install script not found or not executable in $initial_dir."
 fi
 
 # Install Tmux plugins
-echo -e "${BLUE}Installing Tmux plugins...${NC}"
-~/.tmux/plugins/tpm/bin/install_plugins
+log "Installing Tmux plugins..."
+$HOME/.tmux/plugins/tpm/bin/install_plugins
 
-# Export Neovim binary path after setup
-echo export PATH='$PATH:/opt/nvim-linux-x86_64/bin' >>~/.zshrc
+# Final setup
+add_to_zshrc "export PATH=$PATH:$HOME/.local/bin"
+add_to_zshrc "export PATH=$PATH:$HOME/.local/bin/nvim-linux-$ARCH/bin"  
 
-echo -e "${GREEN}All tools installed successfully! Restart your terminal for changes to take effect.${NC}"
+for tool in nvim uv stow tmux fzf sudo fd-find bat curl vim ripgrep locales less; do
+    if ! command -v "$tool" &>/dev/null; then
+        log_error "$tool is not installed."
+    fi
+done
+
+log_success "All tools installed successfully! Restart your terminal for changes to take effect."

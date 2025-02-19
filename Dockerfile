@@ -1,15 +1,11 @@
 # Use the latest Ubuntu as the base image
 FROM ubuntu:latest
-
-# Set noninteractive mode for apt to avoid prompts
 ENV DEBIAN_FRONTEND=noninteractive
+RUN mkdir -p /home/liam/dotfiles
+WORKDIR /home/liam/dotfiles
+COPY . /home/liam/dotfiles
+RUN ls
 
-# Install the necessary packages
-COPY ./bootstrap-ubuntu.sh /bootstrap.sh
-
-# Make the script executable and run it
-RUN chmod +x /bootstrap.sh && ./bootstrap.sh
-# Switch to zsh for testing
+RUN chmod +x bootstrap-ubuntu.sh && ./bootstrap-ubuntu.sh
 USER liam
-
 CMD ["/bin/zsh"]
