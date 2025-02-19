@@ -2,4 +2,15 @@
 
 
 - [x] Fix agnoster locale formatting
-- [ ] Install skim
+- [x] Install skim
+
+## Tools TODO
+
+- zoxide (and cdi commands)
+
+## Programming languages
+
+- python
+- go
+- node
+- rust
