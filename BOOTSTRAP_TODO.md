@@ -7,6 +7,9 @@
 ## Tools TODO
 
 - zoxide (and cdi commands)
+- yazi
+
+
 
 ## Programming languages
 
