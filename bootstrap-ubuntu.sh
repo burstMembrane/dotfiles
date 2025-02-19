@@ -49,8 +49,23 @@ echo -e "${BLUE}Updating package lists...${NC}"
 sudo apt-get update && sudo apt upgrade -y
 
 echo -e "${BLUE}Installing dependencies...${NC}"
-sudo apt-get install -y build-essential curl ca-certificates git unzip rar zsh tmux ripgrep bat vim fd-find fonts-powerline locales less
-
+sudo apt-get install -y \
+  build-essential \
+  git \
+  wget \
+  unzip \
+  rar \
+  zsh \
+  tmux \
+  ripgrep \
+  bat \
+  vim \
+  fd-find \
+  fonts-powerline \
+  locales \
+  less
+# setuup ca ca-certificates
+# sudo update-ca-certificates
 sudo locale-gen en_AU.UTF-8
 # Link bat
 
@@ -66,7 +81,7 @@ if ! command -v nvim &>/dev/null; then
   echo -e "${YELLOW}Installing Neovim...${NC}"
   sudo apt-get install -y software-properties-common
   echo -e "${YELLOW}Adding Neovim PPA...${NC}"
-  sudo add-apt-repository ppa:neovim-ppa/stable -y
+  sudo add-apt-repository ppa:neovim-ppa/unstable -y
   echo -e "${BLUE}Updating package lists...${NC}"
   sudo apt-get update
   echo -e "${YELLOW}Installing Neovim...${NC}"
@@ -83,7 +98,7 @@ if grep -qE '(docker|lxc)' /proc/1/cgroup; then
 else
   echo -e "${BLUE}Installing uv...${NC}"
   if ! command -v uv &>/dev/null; then
-    curl -LsSf https://astral.sh/uv/install.sh | sh
+    wget --timeout=30 --no-check-certificate -qO- https://astral.sh/uv/install.sh | sh
   else
     echo -e "${GREEN}uv is already installed.${NC}"
   fi
@@ -102,7 +117,7 @@ fi
 if [[ ! -d "$HOME/.oh-my-zsh" ]]; then
   echo -e "${YELLOW}Installing Oh-My-Zsh...${NC}"
   sudo apt-get install -y zsh
-  curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh | bash
+  wget --timeout=30 --no-check-certificate -qO- https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh | bash
   chsh -s $(which zsh)
 else
   echo -e "${GREEN}Oh-My-Zsh is already installed.${NC}"
@@ -151,7 +166,7 @@ if command -v stow &>/dev/null; then
   echo -e "${GREEN}GNU Stow is already installed.${NC}"
 else
   echo -e "${YELLOW}Installing GNU Stow...${NC}"
-  curl -O http://ftp.gnu.org/gnu/stow/stow-2.4.1.tar.gz
+  wget --timeout=30 http://ftp.gnu.org/gnu/stow/stow-2.4.1.tar.gz
   tar -xzf stow-2.4.1.tar.gz
   cd stow-2.4.1
   ./configure
