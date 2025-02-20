@@ -1,5 +1,77 @@
 #!/bin/bash
 
+
+echo -e """
+   ___  __  _____  ____________  _________  ______  ___  ___   _  ______
+  / _ )/ / / / _ \/ __/_  __/  |/  / __/  |/  / _ )/ _ \/ _ | / |/ / __/
+ / _  / /_/ / , _/\ \  / / / /|_/ / _// /|_/ / _  / , _/ __ |/    / _/  
+/____/\____/_/|_/___/ /_/ /_/  /_/___/_/  /_/____/_/|_/_/ |_/_/|_/___/  
+ 
+
+This script will install system packages, tools, and configure settings for a new Ubuntu system.
+It is intended to be run on a fresh installation of Ubuntu 
+and will install packages and tools specified in the bootstrap.yaml file.
+
+The script will also create directories, symlinks, and add paths to the shell configuration.
+
+Please review the bootstrap.yaml file for the list of packages, tools, and settings that will be installed.
+
+""" 
+
+get_triplet() {
+    # If gcc or clang is available, use their built-in detection
+    if command -v gcc >/dev/null 2>&1; then
+        gcc -dumpmachine && return
+    elif command -v clang >/dev/null 2>&1; then
+        clang -dumpmachine && return
+    fi
+
+    # If on Debian/Ubuntu, try dpkg-architecture
+    if command -v dpkg-architecture >/dev/null 2>&1; then
+        dpkg-architecture -qDEB_HOST_GNU_TYPE && return
+    fi
+
+    # Manual fallback using uname
+    arch=$(uname -m)
+    os=$(uname -s | tr '[:upper:]' '[:lower:]')
+
+    case "$arch" in
+        x86_64) arch="x86_64" ;;
+        i?86) arch="i686" ;;
+        armv7l) arch="armv7l" ;;
+        aarch64) arch="aarch64" ;;
+        riscv64) arch="riscv64" ;;
+        powerpc64le) arch="powerpc64le" ;;
+        s390x) arch="s390x" ;;
+        *) arch="unknown" ;;
+    esac
+
+    case "$os" in
+        linux) os="linux-gnu" ;;
+        darwin) os="apple-darwin" ;;
+        freebsd) os="unknown-freebsd" ;;
+        netbsd) os="unknown-netbsd" ;;
+        openbsd) os="unknown-openbsd" ;;
+        cygwin|mingw*|msys) os="w64-mingw32" ;;
+        *) os="unknown" ;;
+    esac
+
+    echo "${arch}-unknown-${os}"
+}
+
+# Get the triplet
+TRIPLET=$(get_triplet)
+
+# Split triplet into components
+ARCH=$(echo "$TRIPLET" | cut -d'-' -f1)
+OS=$(echo "$TRIPLET" | cut -d'-' -f3-)
+
+# Export these so they're available to subprocesses
+export TRIPLET
+export ARCH
+export OS
+
+
 # Allow KSH_VERSION to be unbound for zsh installation
 # set -eo pipefail
 add_to_path() {
@@ -65,6 +137,10 @@ log_success() { echo -e "\033[1;32m$1\033[0m"; }
 log_warning() { echo -e "\033[1;33m$1\033[0m"; }
 log_error() { echo -e "\033[1;31m$1\033[0m"; }
 
+
+log_success "detected OS: $OS"
+log_success "detected ARCH: $ARCH"
+log_success "detected: $TRIPLET"
 log "Installing system packages..."
 packages=$(yq '.system.packages[]' bootstrap.yaml | tr '\n' ' ')
 
@@ -73,7 +149,7 @@ if [ ! -f /home/liam/.packages_installed ] || ! diff <(echo "$packages" | tr ' '
     echo "The following packages will be installed:"
     echo "$packages"
     sudo apt-get update
-    sudo apt-get install -y $packages
+    sudo apt-get install -y "$packages"
     # Save the list of packages to the file
     echo "$packages" | tr ' ' '\n' > /home/liam/.packages_installed
 fi
@@ -88,10 +164,9 @@ while IFS= read -r path; do
 done < <(yq '.paths[]' bootstrap.yaml)
 
 # Create symlinks
-yq '.symlinks[]' bootstrap.yaml | while read -r line; do
-    source=$(yq '.source' <(echo "$line"))
-    target=$(yq '.target' <(echo "$line"))
+yq eval '.symlinks[] | [.source, .target] | .[]' bootstrap.yaml | while read -r source && read -r target; do
     target=$(eval echo "$target")
+    log "Linking $source to $target"
     ln -sf "$source" "$target"
 done
 
@@ -132,7 +207,7 @@ yq '.tools | keys[]' bootstrap.yaml | while read -r tool; do
     yq_result=$(yq ".tools.$tool.add_to_path" bootstrap.yaml)
     if [ "$yq_result" != "null" ]; then
         yq ".tools.$tool.add_to_path[]" bootstrap.yaml | while read -r path_entry; do
-            if [ ! -z "$path_entry" ]; then
+            if [ -z "$path_entry" ]; then
                 # Expand any variables in the path
                 path_entry=$(eval echo "$path_entry")
                 log "Adding $path_entry to PATH..."
@@ -155,7 +230,7 @@ yq '.tools | keys[]' bootstrap.yaml | while read -r tool; do
     fi
     if [ "$(yq ".tools.$tool.add_to_shell" bootstrap.yaml)" != "null" ]; then
         yq ".tools.$tool.add_to_shell[]" bootstrap.yaml | while read -r entry; do
-            if [ ! -z "$entry" ]; then
+            if [ -n "$entry" ]; then
                 add_to_shell "$entry"
             fi
         done
@@ -163,7 +238,7 @@ yq '.tools | keys[]' bootstrap.yaml | while read -r tool; do
     # Run post-install commands
     if [ "$(yq ".tools.$tool.post_install" bootstrap.yaml)" != "null" ]; then
         yq ".tools.$tool.post_install[]" bootstrap.yaml | while read -r cmd; do
-            if [ ! -z "$cmd" ]; then
+            if [ -n "$cmd" ]; then
                 log "Running post-install command for $tool: $cmd"
                 cmd=$(eval echo "$cmd")
                 eval "$cmd"
@@ -174,7 +249,7 @@ yq '.tools | keys[]' bootstrap.yaml | while read -r tool; do
     # Run cleanup commands
     if [ "$(yq ".tools.$tool.cleanup" bootstrap.yaml)" != "null" ]; then
         yq ".tools.$tool.cleanup[]" bootstrap.yaml | while read -r cmd; do
-            if [ ! -z "$cmd" ]; then
+            if [ -n "$cmd" ]; then
                 log "Running cleanup command for $tool: $cmd"
                 cmd=$(eval echo "$cmd")
                 eval "$cmd"
@@ -240,7 +315,7 @@ export LC_IDENTIFICATION=en_AU.UTF-8
 export LC_ALL=en_AU.UTF-8
 
 dotfiles_dir="$HOME/dotfiles"
-cd "$dotfiles_dir"
+cd "$dotfiles_dir" || exit 1
 # run the install script to install dotfiles
 if [ -f "install" ]; then
     log "Running install script..."
@@ -252,7 +327,11 @@ fi
 nvim --headless "+Lazy! sync" +qa
 if [ -x "$HOME/.tmux/plugins/tpm/bin/install_plugins" ]; then
     log "Installing tmux plugins..."
-    $HOME/.tmux/plugins/tpm/bin/install_plugins
+    "$HOME/.tmux/plugins/tpm/bin/install_plugins"
 fi
 
 log "Bootstrap script completed successfully!"
+
+# Restart the shell
+#
+# This is necessary to apply changes to the shell environment

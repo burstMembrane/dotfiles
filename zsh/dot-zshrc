@@ -43,7 +43,7 @@ alias c="cargo"
 alias faf="fzf --preview='bat --color=always --style=plain {}'"
 # add alias cat to bat
 alias cat="bat" # Add colors to Terminal
-
+alias cli="zi" # zoxide quick switch
 
 # cli colors
 export CLICOLOR=1

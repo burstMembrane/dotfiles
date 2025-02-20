@@ -20,7 +20,8 @@ system:
     - python-is-python3
     - dpkg 
     - apt-utils
-
+    - git-delta
+    - bat
 tools:
   neovim:
     check_command: nvim
@@ -39,7 +40,7 @@ tools:
       - rm nvim-linux-${ARCH}.tar.gz
 
   uv:
-    check_command: uv
+    check_command: uv --version
     install:
       - curl -fsSL https://astral.sh/uv/install.sh | sh
   zoxide:
@@ -56,9 +57,8 @@ tools:
   #     - ./rustup-init.sh -y
   #   post_install:
   #     - rustc --version
-  #   cleanup:
+  #   cleanup: 
   #     - rm rustup-init.sh
-
   fzf:
     check_path: "$HOME/.fzf"
     install:
