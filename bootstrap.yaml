@@ -26,18 +26,18 @@ tools:
   neovim:
     check_command: nvim
     install:
-      - curl -LO "https://github.com/neovim/neovim/releases/latest/download/nvim-linux-${ARCH}.tar.gz"
+      - curl -LO "https://github.com/neovim/neovim/releases/latest/download/nvim-linux-$(arch).tar.gz"
       - sudo mkdir -p "$HOME/.local/bin"
-      - sudo tar -C "$HOME/.local/bin" -xzf "nvim-linux-${ARCH}.tar.gz"
+      - sudo tar -C "$HOME/.local/bin" -xzf "nvim-linux-$(arch).tar.gz"
       - mkdir -p "$HOME/.local/bin"
-      - mv "$HOME/.local/bin/nvim-linux-${ARCH}/" "$HOME/.local/bin/nvim-dir"
+      - mv "$HOME/.local/bin/nvim-linux-$(arch)/" "$HOME/.local/bin/nvim-dir"
       - ln -sf "$HOME/.local/bin/nvim-dir/bin/nvim" "$HOME/.local/bin/nvim"
     add_to_path:
       - "$HOME/.local/bin"
     post_install:
       - nvim --version
     cleanup:
-      - rm nvim-linux-${ARCH}.tar.gz
+      - rm nvim-linux-$(arch).tar.gz
 
   uv:
     check_command: uv --version
