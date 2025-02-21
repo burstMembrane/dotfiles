@@ -334,5 +334,5 @@ if [ -x "$HOME/.tmux/plugins/tpm/bin/install_plugins" ]; then
 fi
 
 log "Bootstrap script completed successfully!"
-
+sudo chsh liam -s $(which zsh)
 zsh
