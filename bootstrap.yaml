@@ -1,7 +1,6 @@
 system:
   packages:
     - sudo
-    - zsh
     - build-essential
     - git
     - wget
