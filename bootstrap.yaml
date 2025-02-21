@@ -1,6 +1,7 @@
 system:
   packages:
     - sudo
+    - zsh
     - build-essential
     - git
     - wget
@@ -46,7 +47,7 @@ tools:
   zoxide:
     check_command: zoxide --version
     install:
-      - curl -sSfL https://raw.githubusercontent.com/ajeetdsouza/zoxide/main/install.sh | sh
+      - 'if [ "$(uname -m)" = "arm64" ]; then curl -sSfL https://raw.githubusercontent.com/ajeetdsouza/zoxide/main/install.sh | sh -s -- --arch aarch64-unknown-linux-musl; else curl -sSfL https://raw.githubusercontent.com/ajeetdsouza/zoxide/main/install.sh | sh; fi'
     add_to_shell:
       - eval "$(zoxide init zsh)"
   # rust:
