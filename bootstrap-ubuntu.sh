@@ -18,6 +18,10 @@ Please review the bootstrap.yaml file for the list of packages, tools, and setti
 
 """ 
 
+set -eo pipefail
+# set -x
+
+
 get_triplet() {
     # If gcc or clang is available, use their built-in detection
     if command -v gcc >/dev/null 2>&1; then
@@ -73,7 +77,6 @@ export OS
 
 
 # Allow KSH_VERSION to be unbound for zsh installation
-# set -eo pipefail
 add_to_path() {
     local new_path
     new_path=$(realpath -m "$1")  # Ensure absolute path
