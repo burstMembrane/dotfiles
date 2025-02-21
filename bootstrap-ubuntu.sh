@@ -157,8 +157,14 @@ if [ ! -f /home/liam/.packages_installed ] || ! diff <(echo "$packages" | tr ' '
     echo "$packages" | tr ' ' '\n' > /home/liam/.packages_installed
 fi
 
-locale=$(yq '.locale' bootstrap.yaml)
-sudo locale-gen "$locale"
+if [ -f /home/liam/.packages_installed ]; then
+    log_success "System packages are already installed"
+fi
+
+if [ -x /usr/bin/locale-gen ]; then
+    locale=$(yq '.locale' bootstrap.yaml)
+    sudo locale-gen "$locale"
+fi
 
 # Create paths
 while IFS= read -r path; do
