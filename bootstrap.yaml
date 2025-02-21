@@ -83,21 +83,22 @@ tools:
       - "$HOME/.skim/bin/sk --version"
 
   oh-my-zsh:
-    check_path: "$HOME/.oh-my-zsh"
+    check_path: "$HOME/.oh-my-zsh/oh-my-zsh.sh"
     install:
       - curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh | bash
 
   zsh-autosuggestions:
-    check_path: "$ZSH_CUSTOM"
+    check_path: "$HOME/.oh-my-zsh/custom/plugins/zsh-autosuggestions/"
     install:
       - git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions
   zsh-syntax-highlighting:
-    check_path: "$ZSH_CUSTOM"
+    check_path: "$HOME/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting/"
     install:
       - git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting
 
   zsh-vi-mode:
-    check_path: "$ZSH_CUSTOM"
+
+    check_path: "$HOME/.oh-my-zsh/custom/plugins/zsh-vi-mode/"
     install:
       - git clone https://github.com/jeffreytse/zsh-vi-mode   ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-vi-mode
 
