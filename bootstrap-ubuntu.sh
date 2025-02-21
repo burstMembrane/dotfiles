@@ -122,6 +122,11 @@ if ! command -v sudo &>/dev/null; then
     apt-get install -y sudo
 fi
 
+if ! command -v locale-gen &>/dev/null; then
+   sudo  apt-get update
+    sudo apt-get install -y locales
+fi
+
 if ! command -v yq &>/dev/null; then
     mkdir -p "$HOME/.local/bin"
     ARCH=$(uname -m)
@@ -161,10 +166,8 @@ if [ -f /home/liam/.packages_installed ]; then
     log_success "System packages are already installed"
 fi
 
-if [ -x /usr/bin/locale-gen ]; then
-    locale=$(yq '.locale' bootstrap.yaml)
-    sudo locale-gen "$locale"
-fi
+locale=$(yq '.locale' bootstrap.yaml)
+sudo locale-gen "$locale"
 
 # Create paths
 while IFS= read -r path; do
