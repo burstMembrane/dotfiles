@@ -335,6 +335,4 @@ fi
 
 log "Bootstrap script completed successfully!"
 
-# Restart the shell
-#
-# This is necessary to apply changes to the shell environment
+zsh
