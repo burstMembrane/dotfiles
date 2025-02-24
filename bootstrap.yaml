@@ -58,7 +58,7 @@ tools:
     add_to_shell:
       - . "$HOME/.cargo/env"  
     post_install:
-      - $HOME/.cargo/bin/rustc --verion
+      - $HOME/.cargo/bin/rustc --version
     cleanup:
       - rm rustup-init.sh
   fzf:
