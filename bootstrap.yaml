@@ -42,23 +42,25 @@ tools:
       - rm nvim-linux-$(arch).tar.gz
 
   uv:
-    check_command: uv --version
+    check_path: $HOME/.local/bin/uv 
     install:
       - curl -fsSL https://astral.sh/uv/install.sh | sh
   zoxide:
     check_command: zoxide --version
     add_to_shell:
       - eval "$(zoxide init zsh)"
-  # rust:
-  #   check_command: rustc --verion
-  #   install:
-  #     - curl https://sh.rustup.rs  -o rustup-init.sh
-  #     - sudo chmod +x rustup-init.sh
-  #     - ./rustup-init.sh -y
-  #   post_install:
-  #     - rustc --version
-  #   cleanup:
-  #     - rm rustup-init.sh
+  rust:
+    check_path: $HOME/.cargo/bin/rustc 
+    install:
+      - curl https://sh.rustup.rs  -o rustup-init.sh
+      - sudo chmod +x rustup-init.sh
+      - ./rustup-init.sh -y
+    add_to_shell:
+      - . "$HOME/.cargo/env"  
+    post_install:
+      - $HOME/.cargo/bin/rustc --verion
+    cleanup:
+      - rm rustup-init.sh
   fzf:
     check_path: "$HOME/.fzf"
     install:
@@ -112,6 +114,7 @@ tools:
       - mkdir -p ~/.vim/pack/themes/start
       - git clone https://github.com/tomasiser/vim-code-dark $HOME/.vim/pack/themes/start/vim-code-dark
   nvm:
+    check_path: $HOME/.nvm/nvm.sh
     install:
       - curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | sh
     add_to_shell:
