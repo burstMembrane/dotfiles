@@ -1,6 +1,7 @@
 system:
   packages:
     - sudo
+    - zsh
     - build-essential
     - git
     - wget
@@ -18,47 +19,48 @@ system:
     - python3
     - python3-pip
     - python-is-python3
-    - dpkg 
+    - dpkg
     - apt-utils
-
+    - git-delta
+    - bat
+    - zoxide
 tools:
   neovim:
     check_command: nvim
     install:
-      - curl -LO "https://github.com/neovim/neovim/releases/latest/download/nvim-linux-${ARCH}.tar.gz"
+      - curl -LO "https://github.com/neovim/neovim/releases/latest/download/nvim-linux-$(arch).tar.gz"
       - sudo mkdir -p "$HOME/.local/bin"
-      - sudo tar -C "$HOME/.local/bin" -xzf "nvim-linux-${ARCH}.tar.gz"
+      - sudo tar -C "$HOME/.local/bin" -xzf "nvim-linux-$(arch).tar.gz"
       - mkdir -p "$HOME/.local/bin"
-      - mv "$HOME/.local/bin/nvim-linux-${ARCH}/" "$HOME/.local/bin/nvim-dir"
+      - mv "$HOME/.local/bin/nvim-linux-$(arch)/" "$HOME/.local/bin/nvim-dir"
       - ln -sf "$HOME/.local/bin/nvim-dir/bin/nvim" "$HOME/.local/bin/nvim"
     add_to_path:
       - "$HOME/.local/bin"
     post_install:
       - nvim --version
     cleanup:
-      - rm nvim-linux-${ARCH}.tar.gz
+      - rm nvim-linux-$(arch).tar.gz
 
   uv:
-    check_command: uv
+    check_path: $HOME/.local/bin/uv 
     install:
       - curl -fsSL https://astral.sh/uv/install.sh | sh
   zoxide:
     check_command: zoxide --version
-    install:
-    - '[ "$(uname -m)" = "arm64" ] && curl -sSfL https://raw.githubusercontent.com/ajeetdsouza/zoxide/main/install.sh | sh -s -- --arch aarch64-unknown-linux-musl || curl -sSfL https://raw.githubusercontent.com/ajeetdsouza/zoxide/main/install.sh | sh'
     add_to_shell:
       - eval "$(zoxide init zsh)"
-  # rust:
-  #   check_command: rustc --verion
-  #   install:
-  #     - curl https://sh.rustup.rs  -o rustup-init.sh
-  #     - sudo chmod +x rustup-init.sh
-  #     - ./rustup-init.sh -y
-  #   post_install:
-  #     - rustc --version
-  #   cleanup:
-  #     - rm rustup-init.sh
-
+  rust:
+    check_path: $HOME/.cargo/bin/rustc 
+    install:
+      - curl https://sh.rustup.rs  -o rustup-init.sh
+      - sudo chmod +x rustup-init.sh
+      - ./rustup-init.sh -y
+    add_to_shell:
+      - . "$HOME/.cargo/env"  
+    post_install:
+      - $HOME/.cargo/bin/rustc --version
+    cleanup:
+      - rm rustup-init.sh
   fzf:
     check_path: "$HOME/.fzf"
     install:
@@ -83,21 +85,21 @@ tools:
       - "$HOME/.skim/bin/sk --version"
 
   oh-my-zsh:
-    check_path: "$HOME/.oh-my-zsh"
+    check_path: "$HOME/.oh-my-zsh/oh-my-zsh.sh"
     install:
       - curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh | bash
 
   zsh-autosuggestions:
-    check_path: "$ZSH_CUSTOM"
+    check_path: "$HOME/.oh-my-zsh/custom/plugins/zsh-autosuggestions/"
     install:
       - git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions
   zsh-syntax-highlighting:
-    check_path: "$ZSH_CUSTOM"
+    check_path: "$HOME/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting/"
     install:
       - git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting
 
   zsh-vi-mode:
-    check_path: "$ZSH_CUSTOM"
+    check_path: "$HOME/.oh-my-zsh/custom/plugins/zsh-vi-mode/"
     install:
       - git clone https://github.com/jeffreytse/zsh-vi-mode   ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-vi-mode
 
@@ -112,6 +114,7 @@ tools:
       - mkdir -p ~/.vim/pack/themes/start
       - git clone https://github.com/tomasiser/vim-code-dark $HOME/.vim/pack/themes/start/vim-code-dark
   nvm:
+    check_path: $HOME/.nvm/nvm.sh
     install:
       - curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | sh
     add_to_shell:
@@ -134,10 +137,14 @@ tools:
       - rm -rf /tmp/stow-2.4.1 /tmp/stow-2.4.1.tar.gz
 
 paths:
-  - "$HOME/.local/bin"
+  - $HOME/.local/bin
+  - $HOME/.tmux/plugins/tmux-session-wizard/bin 
 
 symlinks:
   - source: /usr/bin/batcat
     target: "$HOME/.local/bin/bat"
+env:
+  - EDITOR=$HOME/.local/bin/nvim
+  - SUDO_EDITOR=$EDITOR
 
 locale: en_AU.UTF-8

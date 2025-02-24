@@ -2,6 +2,55 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## 0.0.4 - 2025-02-20
+#### Bug Fixes
+- PATH woes - (f098562) - Liam Power
+- rm antigen.zsh - (06243c2) - Liam Power
+- syntax err - (652ff3a) - Liam Power
+- need space - (c52c47f) - Liam Power
+- cleanup stow - (c8ba0bd) - Liam Power
+- chown home dir - (55459f7) - Liam Power
+-  lang - (4587119) - Liam Power
+- zshrc - (3a4a236) - Liam Power
+- commited stow - (c5b1c3d) - Liam Power
+- commited stow - (94f8274) - Liam Power
+- bat path - (c7a2ae5) - Liam Power
+- bat path - (66852d9) - Liam Power
+- fzf - (e89a6ae) - Liam Power
+- fzf - (2a2b1f5) - Liam Power
+- don't exit if already user - (805741c) - Liam Power
+- add generic sanity check config - (9b70094) - Liam Power
+- add generic sanity check config - (49b4fe4) - Liam Power
+#### Features
+- **(git)** add git add-safe cmd - (a420807) - Liam Power
+- **(scripts)** add mkx and editx commands to make a file executable and - (6f633b6) - Liam Power
+- update bootstrap - (8f16935) - Liam Power
+- update bootstrap - (5698f48) - Liam Power
+- working docker bootstrap - (6b9b5ff) - Liam Power
+- fix bootstrap script - (6632adb) - Liam Power
+- ipdate nvim config - (21b0311) - Liam Power
+- update bootstrap script - (a002ed5) - Liam Power
+- update bootstrap script - (5e77c92) - Liam Power
+- add unstable fo rlatest nvim - (73f7e6c) - Liam Power
+- update nvim - (97c845a) - Liam Power
+- added version output for cogundo - (fde8db5) - Liam Power
+- update bootstrap script - (b91fe62) - Liam Power
+- update bootstrap script - (061febf) - Liam Power
+- bump nvim submodule - (dada7f4) - Liam Power
+- update scripts - (be9a1f5) - Liam Power
+- add fd to bootstrap - (6b3b278) - Liam Power
+- update bootstrap script - (c384387) - Liam Power
+- tmux browser - (3814912) - Liam Power
+#### Miscellaneous Chores
+- **(nvim)** update nvim submodule - (2c4a454) - Liam Power
+- update nvim submodule - (8f67577) - Liam Power
+- update TODO - (44a47ac) - Liam Power
+#### Refactoring
+- locale func - (882bc7a) - Liam Power
+- locale func - (d9dd235) - Liam Power
+
+- - -
+
 ## 0.0.3 - 2025-02-12
 #### Features
 - add test bootstrap script - (fac9e55) - Liam Power
