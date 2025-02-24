@@ -23,6 +23,7 @@ system:
     - apt-utils
     - git-delta
     - bat
+    - zoxide
 tools:
   neovim:
     check_command: nvim
@@ -46,8 +47,6 @@ tools:
       - curl -fsSL https://astral.sh/uv/install.sh | sh
   zoxide:
     check_command: zoxide --version
-    install:
-      - curl -sSfL https://raw.githubusercontent.com/burstMembrane/zoxide/main/install.sh | sh
     add_to_shell:
       - eval "$(zoxide init zsh)"
   # rust:
