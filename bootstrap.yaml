@@ -137,10 +137,14 @@ tools:
       - rm -rf /tmp/stow-2.4.1 /tmp/stow-2.4.1.tar.gz
 
 paths:
-  - "$HOME/.local/bin"
+  - $HOME/.local/bin
+  - $HOME/.tmux/plugins/tmux-session-wizard/bin 
 
 symlinks:
   - source: /usr/bin/batcat
     target: "$HOME/.local/bin/bat"
+env:
+  - EDITOR=$HOME/.local/bin/nvim
+  - SUDO_EDITOR=$EDITOR
 
 locale: en_AU.UTF-8

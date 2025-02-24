@@ -1,6 +1,8 @@
 #!/bin/bash
 
 
+
+
 echo -e """
    ___  __  _____  ____________  _________  ______  ___  ___   _  ______
   / _ )/ / / / _ \/ __/_  __/  |/  / __/  |/  / _ )/ _ \/ _ | / |/ / __/
@@ -182,6 +184,21 @@ yq eval '.symlinks[] | [.source, .target] | .[]' bootstrap.yaml | while read -r 
     ln -sf "$source" "$target"
 done
 
+# Process environment variables from bootstrap.yaml
+if [ "$(yq '.env' bootstrap.yaml)" != "null" ]; then
+    log "Adding environment variables..."
+    yq eval '.env[]' bootstrap.yaml | while read -r entry; do
+        if [ -n "$entry" ]; then
+            # Check if the entry already starts with 'export'
+            if [[ $entry != export* ]]; then
+                entry="export $entry"
+            fi
+            log "Adding env var: $entry"
+            add_to_shell "$entry"
+        fi
+    done
+fi
+
 # Install tools
 yq '.tools | keys[]' bootstrap.yaml | while read -r tool; do
     log "Processing $tool..."
@@ -309,6 +326,10 @@ fi
 # Verify locale changes
 echo "Final locale settings:"
 locale
+
+
+
+# add environment variables from the bootstrap.yaml file
 
 export LANG=en_AU.UTF-8
 export LANGUAGE=en_AU.UTF-8
