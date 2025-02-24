@@ -34,17 +34,6 @@ else
   export EDITOR='nvim'
 fi
 
-# Aliases
-alias lg="lazygit"
-alias nvz="nvim $HOME/.zshrc && echo -e 'reloading zshrc' && source $HOME/.zshrc"
-alias nvconfig="nvim $HOME/.config/nvim/"
-alias ff="fd -t f | sk --preview='bat --color=always {}' | xargs nvim ${}" 
-alias c="cargo"
-alias faf="fzf --preview='bat --color=always --style=plain {}'"
-# add alias cat to bat
-alias cat="bat" # Add colors to Terminal
-alias cli="zi" # zoxide quick switch
-
 # cli colors
 export CLICOLOR=1
 export LSCOLORS=ExFxBxDxCxegedabagacad
