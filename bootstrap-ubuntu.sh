@@ -157,7 +157,7 @@ if [ ! -f /home/liam/.packages_installed ] || ! diff <(echo "$packages" | tr ' '
     echo "The following packages will be installed:"
     echo "$packages"
     sudo apt-get update
-    sudo apt-get install -y "$packages"
+    sudo apt-get install -y $packages
     # Save the list of packages to the file
     echo "$packages" | tr ' ' '\n' > /home/liam/.packages_installed
 fi
