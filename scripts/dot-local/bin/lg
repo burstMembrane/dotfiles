@@ -1,0 +1,6 @@
+#!/bin/bash
+
+# start lazygit in a tmux pane in the current directory
+
+tmux new-window -c "#{pane_current_path}" "lazygit"
+ 
