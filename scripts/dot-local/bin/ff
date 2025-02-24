@@ -1,8 +1,8 @@
 #!/bin/bash
 fzf \
-  --tmux 90% \
+  --tmux 100% \
   --ansi \
   --preview='bat --color=always {}' \
   --bind 'enter:become(nvim {})' \
   --bind 'start:reload: fd -t f' \
-  --preview-window 70% \
+  --preview-window 70%
