@@ -3,6 +3,6 @@ fzf \
   --tmux 90% \
   --ansi \
   --preview='bat --color=always {}' \
-  --bind 'enter:become(nvim {})' \
+  --bind "enter:become($EDITOR {})" \
   --bind 'start:reload: fd -t f' \
   --preview-window 70% \
