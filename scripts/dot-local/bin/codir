@@ -1,8 +1,12 @@
 #!/bin/bash
 
 # open recent files in the VSCode database
-
-folders=$(sqlite3 ~/.config/Code/User/globalStorage/state.vscdb "SELECT value FROM ItemTable WHERE key = \"history.recentlyOpenedPathsList\";" | jq -r ".[] | map(.folderUri)" | jq -r ".[]" | grep -e "file://" | sed "s/file:\/\///g")
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    CODE_CONFIG_DIR="$HOME/Library/Application Support/Code/User"
+else
+    CODE_CONFIG_DIR="$HOME/.config/Code/User"
+fi
+folders=$(sqlite3 "$CODE_CONFIG_DIR/globalStorage/state.vscdb" "SELECT value FROM ItemTable WHERE key = \"history.recentlyOpenedPathsList\";" | jq -r ".[] | map(.folderUri)" | jq -r ".[]" | grep -e "file://" | sed "s/file:\/\///g")
 printf "%s\n" $folders | fzf \
   --tmux 90% \
   --preview "ls {}" \

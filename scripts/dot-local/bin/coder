@@ -1,8 +1,14 @@
 #!/bin/bash
 
-# open recent files in the VSCode database
-CODE_CONFIG_DIR=$HOME/.config/Code/User/
-files=$(sqlite3 $CODE_CONFIG_DIR/globalStorage/state.vscdb "SELECT value FROM ItemTable WHERE key = \"history.recentlyOpenedPathsList\";" | jq -r ".[] | map(.fileUri)" | sed 's/file:\/\///g' | grep -e "null" --invert-match | jq -r ".[]")
+# Detect OS and set the appropriate VSCode config directory
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    # macOS path
+    CODE_CONFIG_DIR="$HOME/Library/Application Support/Code/User"
+else
+    # Linux path
+    CODE_CONFIG_DIR="$HOME/.config/Code/User"
+fi
+files=$(sqlite3 "$CODE_CONFIG_DIR/globalStorage/state.vscdb" "SELECT value FROM ItemTable WHERE key = \"history.recentlyOpenedPathsList\";" | jq -r ".[] | map(.fileUri)" | sed 's/file:\/\///g' | grep -e "null" --invert-match | jq -r ".[]")
 
 printf "%s\n" $files | fzf \
   --tmux 90% \

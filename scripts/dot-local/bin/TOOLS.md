@@ -2,7 +2,7 @@
 
 a fuzzy finder that searches the apt package cache on linux
 
-### askl 
+### askl
 
 Ask a local LLAMA model a question with syntax highlighting
 
@@ -12,14 +12,13 @@ Ask phi3 a question with syntax highlighting
 
 ### asktool
 
-ask a question about a a tool e.g 
-`asktool tr "substitute newlines with spaces"` 
+ask a question about a a tool e.g
+`asktool tr "substitute newlines with spaces"`
 This will fetch the man pages and tldr if available for the tool and feed it to a local LLM to answer your question
 
 ### brewfzf
 
 a fuzzy finder for packages from the homebrew repo for macOS
-
 
 ### chk
 
@@ -39,9 +38,9 @@ Find files recursively from cwd -> open selected file in nvim
 
 ### findtool
 
-Searches tools in PATH 
+Searches tools in PATH
 
-### ft 
+### ft
 
 Find text ala telescope `live grep` function using ripgrep and fzf -> opens in nvim
 
@@ -63,7 +62,7 @@ Search for and clone a github repo using the `gh` cli
 
 ### ghdocs
 
-Search for documentation inside a repo 
+Search for documentation inside a repo
 
 ### ghls
 
@@ -88,5 +87,3 @@ Restow the packages in `dotfiles`
 ### zd
 
 Fuzzy finding interface to `zoxide`
-
-
