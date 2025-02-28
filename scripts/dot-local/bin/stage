@@ -12,14 +12,13 @@ KEY_QUIT="q"       # Quit fzf interface
 KEY_COMMIT="c"     # Commit changes
 # Move to the root of the Git repository
 cd "$(git rev-parse --show-toplevel)" || exit 1
-
 # Check for changes
 if [ -z "$(git status --short)" ]; then
   git status
   exit 0
 fi
 
-delta_cmd='delta --no-gitconfig --file-style="" --line-numbers-minus-style="" --line-numbers-plus-style="" --hunk-header-decoration-style "ul"'
+delta_cmd='delta --line-numbers --no-gitconfig --file-style="" --line-numbers-minus-style="" --line-numbers-plus-style="" --hunk-header-decoration-style "ul"'
 # Define the preview command
 preview_cmd="
   file=\$(echo {} | cut -c4-)
