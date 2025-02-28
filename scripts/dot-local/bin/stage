@@ -18,7 +18,8 @@ if [ -z "$(git status --short)" ]; then
   exit 0
 fi
 
-delta_cmd='delta --line-numbers --no-gitconfig --file-style="" --line-numbers-minus-style="" --line-numbers-plus-style="" --hunk-header-decoration-style "ul"'
+
+delta_cmd='delta --no-gitconfig --file-style="" --line-numbers-minus-style="" --line-numbers-plus-style="" --hunk-header-decoration-style "ul"'
 # Define the preview command
 preview_cmd="
   file=\$(echo {} | cut -c4-)
@@ -43,4 +44,5 @@ fzf -m --reverse \
   --bind "$KEY_DISCARD:execute(git restore {2})" \
   --bind "$KEY_STASH:execute(git stash push -- {2})" \
   --bind "$KEY_COMMIT:become(git commit)" \
-  --bind "$KEY_QUIT:abort"
+  --bind "enter:become(git status)" \
+  --bind "$KEY_QUIT:abort" 
