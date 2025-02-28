@@ -19,19 +19,20 @@ if [ -z "$(git status --short)" ]; then
   exit 0
 fi
 
+delta_cmd='delta --no-gitconfig --file-style="" --line-numbers-minus-style="" --line-numbers-plus-style="" --hunk-header-decoration-style "ul"'
 # Define the preview command
-preview_cmd='
-  file=$(echo {} | cut -c4-)
-  if git ls-files --error-unmatch "$file" &>/dev/null; then
-    if git diff --cached -- "$file" | delta --no-gitconfig | grep .; then
-      git diff --cached -- "$file" | delta --no-gitconfig
+preview_cmd="
+  file=\$(echo {} | cut -c4-)
+  if git ls-files --error-unmatch \"\$file\" &>/dev/null; then
+    if git diff --cached -- \"\$file\" | ${delta_cmd} | grep .; then
+      git diff --cached -- \"\$file\" | ${delta_cmd}
     else
-      git diff -- "$file" | delta --no-gitconfig
+      git diff -- \"\$file\" | ${delta_cmd}
     fi
   else
-    cat "$file"
+    cat \"\$file\"
   fi
-'
+"
 # Sort files by filename while preserving `git status` output
 fzf -m --reverse \
   --bind "start:reload: git status --short" \
