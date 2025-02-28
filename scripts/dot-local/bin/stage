@@ -1,0 +1,45 @@
+#!/bin/bash
+
+# Git Interactive Staging with fzf
+# Allows you to stage, unstage, discard, stash changes, or quit interactively.
+
+# Customizable keybindings
+KEY_STAGE="s"      # Stage file(s) (git add)
+KEY_UNSTAGE="u"    # Unstage file(s) (git restore --staged)
+KEY_DISCARD="d"    # Discard changes (git restore)
+KEY_STASH="x"      # Stash file(s) (git stash push --)
+KEY_QUIT="q"       # Quit fzf interface
+
+# Move to the root of the Git repository
+cd "$(git rev-parse --show-toplevel)" || exit 1
+
+# Check for changes
+if [ -z "$(git status --short)" ]; then
+  echo "No changes to show."
+  exit 0
+fi
+
+# Define the preview command
+preview_cmd='
+  file=$(echo {} | cut -c4-)
+  if git ls-files --error-unmatch "$file" &>/dev/null; then
+    if git diff --cached -- "$file" | delta --no-gitconfig | grep .; then
+      git diff --cached -- "$file" | delta --no-gitconfig
+    else
+      git diff -- "$file" | delta --no-gitconfig
+    fi
+  else
+    cat "$file"
+  fi
+'
+
+# Sort files by filename while preserving `git status` output
+git status --short | sort -k2 | fzf -m --reverse \
+  --header "Git fzf: [$KEY_STAGE] Stage | [$KEY_UNSTAGE] Unstage | [$KEY_DISCARD] Discard | [$KEY_STASH] Stash | [$KEY_QUIT] Quit" \
+  --disabled --ansi --preview-window=right:70% \
+  --preview "$preview_cmd" \
+  --bind "$KEY_STAGE:execute(git add {2})+reload(git status --short | sort -k2)" \
+  --bind "$KEY_UNSTAGE:execute(git restore --staged {2})+reload(git status --short | sort -k2)" \
+  --bind "$KEY_DISCARD:execute(git restore {2})+reload(git status --short | sort -k2)" \
+  --bind "$KEY_STASH:execute(git stash push -- {2})+reload(git status --short | sort -k2)" \
+  --bind "$KEY_QUIT:abort"

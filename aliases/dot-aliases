@@ -14,7 +14,6 @@ alias decryptfile='openssl aes-256-cbc -d -in $1.enc -out $1'
 alias encryptfile='openssl aes-256-cbc -salt -in $1 -out $1.enc'
 alias faf="fzf --preview='bat --color=always --style=plain {}'"
 alias faf="fzf --preview='bat --color=always --style=plain {}'"
-alias ff="fd -t f | fzf --preview='bat --color=always {}' | xargs nvim ${}" 
 alias ffmpeg="ffmpeg -hide_banner"
 alias lg="lazygit"
 alias lg="lazygit"
