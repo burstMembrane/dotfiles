@@ -32,15 +32,15 @@ preview_cmd='
     cat "$file"
   fi
 '
-
 # Sort files by filename while preserving `git status` output
-git status --short | sort -k2 | fzf -m --reverse \
-  --header "Git fzf: [$KEY_STAGE] Stage | [$KEY_UNSTAGE] Unstage | [$KEY_DISCARD] Discard | [$KEY_STASH] Stash | [$KEY_QUIT] Quit" \
+fzf -m --reverse \
+  --bind "start:reload: git status --short" \
+  --header "STAGE: [$KEY_STAGE] Stage | [$KEY_UNSTAGE] Unstage | [$KEY_DISCARD] Discard | [$KEY_STASH] Stash | [$KEY_QUIT] Quit" \
   --disabled --ansi --preview-window=right:70% \
   --preview "$preview_cmd" \
-  --bind "$KEY_STAGE:execute(git add {2})+reload(git status --short | sort -k2)" \
-  --bind "$KEY_UNSTAGE:execute(git restore --staged {2})+reload(git status --short | sort -k2)" \
-  --bind "$KEY_DISCARD:execute(git restore {2})+reload(git status --short | sort -k2)" \
-  --bind "$KEY_STASH:execute(git stash push -- {2})+reload(git status --short | sort -k2)" \
+  --bind "$KEY_STAGE:execute(git add {2})" \
+  --bind "$KEY_UNSTAGE:execute(git restore --staged {2})" \
+  --bind "$KEY_DISCARD:execute(git restore {2})" \
+  --bind "$KEY_STASH:execute(git stash push -- {2})" \
   --bind "$KEY_COMMIT:become(git commit)" \
   --bind "$KEY_QUIT:abort"
