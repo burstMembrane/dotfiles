@@ -6,6 +6,7 @@
 # Customizable keybindings
 KEY_STAGE="s"      # Stage file(s) (git add)
 KEY_UNSTAGE="u"    # Unstage file(s) (git restore --staged)
+KEY_EDIT="e"       # Edit file(s) (git add --edit)
 KEY_DISCARD="d"    # Discard changes (git restore)
 KEY_STASH="x"      # Stash file(s) (git stash push --)
 KEY_QUIT="q"       # Quit fzf interface
@@ -18,31 +19,39 @@ if [ -z "$(git status --short)" ]; then
   exit 0
 fi
 
-
-delta_cmd='delta --no-gitconfig --file-style="" --line-numbers-minus-style="" --line-numbers-plus-style="" --hunk-header-decoration-style "ul"'
+delta_cmd='delta --no-gitconfig \
+           --wrap-max-lines 1 \
+           --file-style omit \
+           --hunk-header-style "dim" \
+           --hunk-header-decoration-style "omit" \
+           --syntax-theme none  \
+           --paging never | bat --style=plain --wrap=auto'
 # Define the preview command
-preview_cmd="
-  file=\$(echo {} | cut -c4-)
-  if git ls-files --error-unmatch \"\$file\" &>/dev/null; then
-    if git diff --cached -- \"\$file\" | ${delta_cmd} | grep .; then
-      git diff --cached -- \"\$file\" | ${delta_cmd}
+preview_cmd='
+  file=$(echo {} | cut -c4-)
+  if git ls-files --error-unmatch "$file" &>/dev/null; then
+    if git diff --cached -- "$file" | '"${delta_cmd}"' | grep .; then
+      git diff --cached -- "$file" | '"${delta_cmd}"'
     else
-      git diff -- \"\$file\" | ${delta_cmd}
+      git diff -- "$file" | '"${delta_cmd}"'
     fi
   else
-    cat \"\$file\"
+    '"${delta_cmd}"' /dev/null "$file"
   fi
-"
+'
+is_git_file="git ls-files --error-unmatch {} &>/dev/null"
 # Sort files by filename while preserving `git status` output
 fzf -m --reverse \
+  --wrap \
   --bind "start:reload: git status --short" \
   --header "STAGE: [$KEY_STAGE] Stage | [$KEY_UNSTAGE] Unstage | [$KEY_DISCARD] Discard | [$KEY_STASH] Stash | [$KEY_QUIT] Quit" \
   --disabled --ansi --preview-window=right:70% \
   --preview "$preview_cmd" \
-  --bind "$KEY_STAGE:execute(git add {2})" \
-  --bind "$KEY_UNSTAGE:execute(git restore --staged {2})" \
-  --bind "$KEY_DISCARD:execute(git restore {2})" \
-  --bind "$KEY_STASH:execute(git stash push -- {2})" \
+  --bind "$KEY_STAGE:execute(git add {2} && sleep 0.1)+reload(git status --short)" \
+  --bind "$KEY_UNSTAGE:execute($is_git_file {2} && git restore --staged {2} && sleep 0.1)+reload(git status --short)" \
+  --bind "$KEY_EDIT:execute($is_git_file {2} && git add --edit {2} && sleep 0.1)+reload(git status --short)" \
+  --bind "$KEY_DISCARD:execute($is_git_file {2} && git restore {2} && sleep 0.1)+reload(git status --short)" \
+  --bind "$KEY_STASH:execute($is_git_file {2} && git stash push -- {2} && sleep 0.1)+reload(git status --short)" \
   --bind "$KEY_COMMIT:become(git commit)" \
-  --bind "enter:become(git status)" \
-  --bind "$KEY_QUIT:abort" 
+  --bind "$KEY_QUIT:abort" \
+  --bind "enter:become(git status)"

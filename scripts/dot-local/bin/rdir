@@ -1,0 +1,6 @@
+#!/bin/bash
+
+# open a zoxide folder in the $EDITOR
+# usage: cdr <folder>
+folder=$(zoxide query --interactive)
+$EDITOR $folder

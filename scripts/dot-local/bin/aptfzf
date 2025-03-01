@@ -1,5 +1,4 @@
 #!/bin/bash
-AWK_REG=
 # aptfzf - APT package search with fzf
 INITIAL_CMD="apt-cache pkgnames"
 fzf --query "$1" \

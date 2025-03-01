@@ -9,9 +9,8 @@ else
     CODE_CONFIG_DIR="$HOME/.config/Code/User"
 fi
 files=$(sqlite3 "$CODE_CONFIG_DIR/globalStorage/state.vscdb" "SELECT value FROM ItemTable WHERE key = \"history.recentlyOpenedPathsList\";" | jq -r ".[] | map(.fileUri)" | sed 's/file:\/\///g' | grep -e "null" --invert-match | jq -r ".[]")
-
 printf "%s\n" $files | fzf \
   --tmux 90% \
-  --preview "bat --style=numbers --color=always --line-range :500 {}" \
-  --preview-window=right:70%:wrap \
+  --preview " bat --style=numbers --color=always --line-range :500 {}" \
+  --preview-window=right:60%:wrap \
   --bind 'enter:become(code {})'

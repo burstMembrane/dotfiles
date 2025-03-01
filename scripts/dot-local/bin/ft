@@ -2,9 +2,17 @@
 
 # 1. Search for text in files using Ripgrep
 # 2. Interactively restart Ripgrep with reload action
-# 3. Open the file in Vim
+# 3. Open the file in Vim or VS Code
 RG_PREFIX="rg --column --line-number --no-heading --color=always --smart-case "
 INITIAL_QUERY="${*:-}"
+
+# Define the command to open the file based on the EDITOR variable
+if [[ "$EDITOR" == "code" ]]; then
+    OPEN_CMD="code --goto {1}:{2}"
+else
+    OPEN_CMD="$EDITOR {1} +{2}"
+fi
+
 fzf --ansi \
     --tmux 90% \
     --border horizontal \
@@ -16,4 +24,4 @@ fzf --ansi \
     --delimiter : \
     --preview-window 'right,60%,border-bottom,+{2}+3/3,~3' \
     --preview 'bat --color=always {1} --style=snip --highlight-line {2} ' \
-    --bind 'enter:become(nvim {1} +{2})'
+    --bind "enter:become($OPEN_CMD)"
