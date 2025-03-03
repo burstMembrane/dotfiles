@@ -7,3 +7,18 @@ desc = "Copy files using rsync"
 on   = "T"
 run  = "plugin max-preview"
 desc = "Maximize or restore preview"
+
+[[manager.prepend_keymap]]
+on   = "P"
+run  = "plugin toggle-view --args=parent"
+desc = "Toggle parent"
+
+[[manager.prepend_keymap]]
+on   = "<C-2>"
+run  = "plugin toggle-view --args=current"
+desc = "Toggle current"
+
+[[manager.prepend_keymap]]
+on   = "<C-3>"
+run  = "plugin toggle-view --args=preview"
+desc = "Toggle preview"
