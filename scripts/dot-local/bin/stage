@@ -4,13 +4,13 @@
 # Allows you to stage, unstage, discard, stash changes, or quit interactively.
 
 # Customizable keybindings
-KEY_STAGE="s"      # Stage file(s) (git add)
-KEY_UNSTAGE="u"    # Unstage file(s) (git restore --staged)
-KEY_EDIT="e"       # Edit file(s) (git add --edit)
-KEY_DISCARD="d"    # Discard changes (git restore)
-KEY_STASH="x"      # Stash file(s) (git stash push --)
-KEY_QUIT="q"       # Quit fzf interface
-KEY_COMMIT="c"     # Commit changes
+KEY_STAGE="ctrl-s"   # Stage file(s) (git add)
+KEY_UNSTAGE="ctrl-u" # Unstage file(s) (git restore --staged)
+KEY_EDIT="ctrl-e"    # Edit file(s) (git add --edit)
+KEY_DISCARD="ctrl-d" # Discard changes (git restore)
+KEY_STASH="ctrl-x"   # Stash file(s) (git stash push --)
+KEY_QUIT="ctrl-q"    # Quit fzf interface
+KEY_COMMIT="ctrl-c"  # Commit changes
 
 # Move to the root of the Git repository
 cd "$(git rev-parse --show-toplevel)" || exit 1
@@ -43,7 +43,7 @@ preview_cmd='
 is_git_file="git ls-files --error-unmatch {} &>/dev/null"
 
 # Sort files by filename while preserving `git status` output
-git status --porcelain | fzf  --reverse \
+git status --porcelain | fzf --reverse \
   --wrap \
   --disabled \
   --ansi \
