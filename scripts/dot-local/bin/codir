@@ -1,14 +1,20 @@
 #!/bin/bash
 
-# open recent files in the vscode database
-if [[ "$ostype" == "darwin"* ]]; then
-    code_config_dir="$home/library/application support/code/user"
+# Detect OS and set the appropriate VSCode config directory
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    # macOS path
+    CODE_CONFIG_DIR="$HOME/Library/Application Support/Code/User"
 else
-    code_config_dir="$home/.config/code/user"
+    # Linux path
+    CODE_CONFIG_DIR="$HOME/.config/Code/User"
 fi
-folders=$(sqlite3 "$code_config_dir/globalstorage/state.vscdb" "select value from itemtable where key = \"history.recentlyopenedpathslist\";" | jq -r ".[] | map(.folderuri)" | jq -r ".[]" | grep -e "file://" | sed "s/file:\/\///g")
-printf "%s\n" $folders | fzf \
+
+folders=$(sqlite3 "$CODE_CONFIG_DIR/globalStorage/state.vscdb" \
+"SELECT value FROM ItemTable WHERE key = 'history.recentlyOpenedPathsList';" \
+| jq -r '.entries[]?.folderUri // empty' \
+| sed 's|^file://||' | head -n 50)
+
+# Pipe to fzf for selection
+printf "%s\n" "$folders" | fzf \
   --tmux 90% \
-  --preview "ls {}" \
-  --preview-window=right:40%:wrap \
   --bind 'enter:become(code {})'
