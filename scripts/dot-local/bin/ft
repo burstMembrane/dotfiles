@@ -7,9 +7,11 @@ RG_PREFIX="rg --column --line-number --no-heading --color=always --smart-case "
 INITIAL_QUERY="${*:-}"
 
 # Define the command to open the file based on the EDITOR variable
-if [[ "$EDITOR" == "code" ]]; then
+if [ "$EDITOR" == "code" ]; then
     # OPEN_CMD="code --goto {1}:{2}"
     OPEN_CMD="f={1} open vscode://file$(realpath $f)/{1}:{2}:{3}"
+elif [ "$EDITOR" == "cursor" ]; then
+    OPEN_CMD="f={1} open cursor://file$(realpath $f)/{1}:{2}:{3}"
 else
     OPEN_CMD="$EDITOR {1} +{2}"
 fi
@@ -24,5 +26,5 @@ fzf --ansi \
     --bind "change:reload:sleep 0.01; $RG_PREFIX {q} | delta || true" \
     --delimiter : \
     --preview-window 'right,60%,border-bottom,+{2}+3/3,~3' \
-    --preview 'bat --color=always {1} --style=snip --highlight-line {2} ' \
+    --preview 'bat --color=always {1} --style=snip --theme="default" --highlight-line {2} ' \
     --bind "enter:become($OPEN_CMD)"

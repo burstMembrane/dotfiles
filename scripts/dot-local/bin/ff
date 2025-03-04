@@ -4,6 +4,9 @@
 if [ "$editor" = "code" ]; then
   fd -t f | fzf --preview='bat --color=always {}' --preview-window 70% | xargs realpath | xargs -I{} open "vscode://file/{}"
   exit 0
+else if [ "$editor" = "cursor" ]; then
+  fd -t f | fzf --preview='bat --color=always {}' --preview-window 70% | xargs realpath | xargs -I{} open "cursor://open?url=file://{}"
+  exit 0
 else
   become="$editor {}"
   
