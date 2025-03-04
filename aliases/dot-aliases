@@ -34,4 +34,13 @@ alias v="nvim"
 alias zshreload="source ~/.zshrc"
 alias lg="lazygit"
 alias untar="tar -xvf"
-alias e="$EDITOR"
+# alias e="$EDITOR"
+alias g="git"
+alias gst="git status"
+alias gco="git checkout"
+alias gcm="git commit -m"
+alias gca="git commit --amend --no-edit"
+# if the editor is code then alias ff
+if [ $EDITOR = "code" ]; then
+  alias ff='fd -t f | fzf --preview="bat --color=always {}" --preview-window 70% | xargs realpath | xargs -I{} open "vscode://file/{}"'
+fi

@@ -1,8 +1,17 @@
-#!/bin/bash
-fzf \
-  --tmux 100% \
-  --ansi \
-  --preview='bat --color=always {}' \
-  --bind "enter:become($EDITOR {})" \
-  --bind 'start:reload: fd -t f' \
-  --preview-window 70%
+#!/bin/sh
+
+# handle vscode with vscode://file/... links to avoid IPC overhead
+if [ "$editor" = "code" ]; then
+  fd -t f | fzf --preview='bat --color=always {}' --preview-window 70% | xargs realpath | xargs -I{} open "vscode://file/{}"
+  exit 0
+else
+  become="$editor {}"
+  
+  fzf \
+    --tmux 100% \
+    --ansi \
+    --preview='bat --color=always {}' \
+    --bind "enter:become($become)" \
+    --bind 'start:reload: fd -t f' \
+    --preview-window 70%
+fi

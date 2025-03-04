@@ -8,7 +8,8 @@ INITIAL_QUERY="${*:-}"
 
 # Define the command to open the file based on the EDITOR variable
 if [[ "$EDITOR" == "code" ]]; then
-    OPEN_CMD="code --goto {1}:{2}"
+    # OPEN_CMD="code --goto {1}:{2}"
+    OPEN_CMD="f={1} open vscode://file$(realpath $f)/{1}:{2}:{3}"
 else
     OPEN_CMD="$EDITOR {1} +{2}"
 fi
