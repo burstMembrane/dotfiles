@@ -24,7 +24,9 @@ system:
     - git-delta
     - bat
     - zoxide
+
 tools:
+
   neovim:
     check_command: nvim
     install:
@@ -45,10 +47,12 @@ tools:
     check_path: $HOME/.local/bin/uv 
     install:
       - curl -fsSL https://astral.sh/uv/install.sh | sh
+
   zoxide:
     check_command: zoxide --version
     add_to_shell:
       - eval "$(zoxide init zsh)"
+
   rust:
     check_path: $HOME/.cargo/bin/rustc 
     install:
@@ -61,6 +65,7 @@ tools:
       - $HOME/.cargo/bin/rustc --version
     cleanup:
       - rm rustup-init.sh
+
   fzf:
     check_path: "$HOME/.fzf"
     install:
@@ -121,6 +126,7 @@ tools:
       - 'export NVM_DIR="$HOME/.nvm"'
       - '[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"'
       - '[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"'
+
   gnu_stow:
     check_command: stow
     install:
