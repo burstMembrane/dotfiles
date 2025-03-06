@@ -1,20 +1,18 @@
 #!/bin/bash
 
 # handle vscode with vscode://file/... links to avoid IPC overhead
-if [ "$editor" = "code" ]; then
+if [ "$EDITOR" = "code" ]; then
   fd -t f | fzf --preview='bat --color=always {}' --preview-window 70% | xargs realpath | xargs -I{} open "vscode://file/{}"
   exit 0
-elif [ "$editor" = "cursor" ]; then
+elif [ "$EDITOR" = "cursor" ]; then
   fd -t f | fzf --preview='bat --color=always {}' --preview-window 70% | xargs realpath | xargs -I{} open "cursor://open?url=file://{}"
   exit 0
 else
-  become="$editor {}"
-  
   fzf \
     --tmux 100% \
     --ansi \
     --preview='bat --color=always {}' \
-    --bind "enter:become($become)" \
+    --bind "enter:become($EDITOR {})" \
     --bind 'start:reload: fd -t f' \
     --preview-window 70%
 fi
