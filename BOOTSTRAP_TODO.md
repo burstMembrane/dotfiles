@@ -1,16 +1,16 @@
-# BOOTSTRAP 
+# BOOTSTRAP
 
 - [x] Fix agnoster locale formatting
 - [x] Install skim
 
-## Tools 
+## Tools
 
 - [x] nvm
-- [ ] zoxide (and cdi commands)
-- [ ] yazi
+- [x] zoxide (and cdi commands)
+- [x] yazi
 - [ ] gh cli
 - [ ] copilot.nvim and avante
-- [ ] glow for md 
+- [ ] glow for md
 
 ## Setup
 

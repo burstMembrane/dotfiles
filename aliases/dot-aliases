@@ -43,4 +43,5 @@ alias gcm="git commit -m"
 alias gca="git commit --amend --no-edit"
 alias rls="ls"
 alias clearls="clear && ls"
+alias cu="cur"
 # if the editor is code then alias ff
