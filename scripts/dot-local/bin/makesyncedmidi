@@ -1,0 +1,55 @@
+#!/bin/bash
+# Usage:
+#   ./play-midi-audio-split.sh audio.wav midi.mid [-o output.wav]
+
+set -euo pipefail
+
+if [ $# -lt 2 ]; then
+  echo "Usage: $0 <audio_file.wav> <midi_file.mid> [-o output.wav]"
+  exit 1
+fi
+
+AUDIO_FILE="$1"
+MIDI_FILE="$2"
+OUTPUT_FILE=""
+shift 2
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    -o)
+      OUTPUT_FILE="$2"
+      shift 2
+      ;;
+    *)
+      echo "Unknown option: $1"
+      exit 1
+      ;;
+  esac
+done
+
+# Generate temp mono files
+TMP_LEFT=$(mktemp /tmp/audio_left.XXXX.wav)
+TMP_RIGHT=$(mktemp /tmp/midi_right.XXXX.wav)
+
+cleanup() {
+  rm -f "$TMP_LEFT" "$TMP_RIGHT"
+}
+trap cleanup EXIT
+
+# Convert audio to mono for left channel
+ffmpeg -y -i "$AUDIO_FILE" -ac 1 "$TMP_LEFT"
+
+# Render MIDI with full duration preserved
+timidity --preserve-silence -Ow -o - "$MIDI_FILE" | ffmpeg -y -f wav -i - -ac 1 "$TMP_RIGHT"
+# Combine into stereo with duration-matching padding
+# Combine into stereo with duration-matching padding
+if [ -n "$OUTPUT_FILE" ]; then
+  ffmpeg -y -i "$TMP_LEFT" -i "$TMP_RIGHT" \
+    -filter_complex "[0:a]apad=whole_dur=1[left];[1:a]apad=whole_dur=1[right];[left][right]join=inputs=2:channel_layout=stereo[aout]" \
+    -map "[aout]" "$OUTPUT_FILE"
+  echo "Saved to $OUTPUT_FILE"
+else
+  ffmpeg -i "$TMP_LEFT" -i "$TMP_RIGHT" \
+    -filter_complex "[0:a]apad=whole_dur=1[left];[1:a]apad=whole_dur=1[right];[left][right]join=inputs=2:channel_layout=stereo[aout]" \
+    -map "[aout]" -f wav - | ffplay -f wav -showmode 1 -autoexit -
+fi

@@ -42,4 +42,11 @@ alias gca="git commit --amend --no-edit"
 alias rls="ls"
 alias clearls="clear && ls"
 alias cu="cur"
+alias gg="cd -"
+# open a file in obsidian
+alias fzv="fzvault --vault home --exclude _templates"
 # if the editor is code then alias ff
+alias commitgitignore="git commit -m 'chore: update gitignore'"
+alias uva="uv add"
+alias svenv="source .venv/bin/activate"
+alias shadadd="bunx --bun shadcn@latest add"

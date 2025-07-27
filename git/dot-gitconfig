@@ -2,7 +2,7 @@
 	email = liamfpower@gmail.com
 	name = Liam Power
 [core]
-	excludesfile = ~/.gitignore_global
+	excludesfile = /Users/liampower/.gitignore
   pager = delta
   editor = nvim
 [interactive]
@@ -23,3 +23,5 @@ add-safe = "!f() { \
 	git add -p && \
 	git add -N $(git ls-files -o --exclude-standard | xargs -I{} find {} -type f -size -5M); \
 }; f"
+[sequence]
+	editor = interactive-rebase-tool

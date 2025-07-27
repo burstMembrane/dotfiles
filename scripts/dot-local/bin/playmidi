@@ -1,0 +1,26 @@
+#!/bin/bash
+# play-midi
+
+# Usage: playmidi <midi_file>
+
+set -e
+
+if [ -z "$1" ]; then
+  echo "Usage: $0 <midi_file>"
+  exit 1
+fi
+
+MIDI_FILE="$1"
+
+if ! command -v timidity &> /dev/null; then
+  echo "Error: timidity not found in PATH."
+  exit 1
+fi
+
+if ! command -v ffplay &> /dev/null; then
+  echo "Error: ffplay not found in PATH."
+  exit 1
+fi
+
+echo "Playing $MIDI_FILE..."
+timidity -Ow -o - "$MIDI_FILE" | ffplay -nodisp -autoexit -f wav -

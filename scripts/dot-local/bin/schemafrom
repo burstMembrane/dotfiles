@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [[ $# -lt 1 ]]; then
+  echo "Usage: json-schema <url> [httpie args...]"
+  exit 1
+fi
+
+URL=$1
+shift
+
+# Make the request and capture both body and status
+TMP=$(mktemp)
+STATUS=$(http --check-status --print=Hhb "$URL" "$@" 2> /dev/null | tee "$TMP" | grep '^HTTP/' | awk '{print $2}' || true)
+
+# Exit on empty or bad response
+if [[ -z "${STATUS}" ]]; then
+  echo "Error: No HTTP response received."
+  rm "$TMP"
+  exit 1
+fi
+
+if [[ "$STATUS" -lt 200 || "$STATUS" -ge 300 ]]; then
+  echo "Non-successful HTTP status: $STATUS"
+  head "$TMP"
+  rm "$TMP"
+  exit 1
+fi
+
+# Check if it's JSON
+if ! jq empty < "$TMP" 2> /dev/null; then
+  echo "Response is not valid JSON."
+  head "$TMP"
+  rm "$TMP"
+  exit 1
+fi
+
+# Generate schema
+genson < "$TMP" | yq -P eval -
+rm "$TMP"
