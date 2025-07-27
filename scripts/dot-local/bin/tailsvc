@@ -1,0 +1,18 @@
+#!/bin/bash
+set -euo pipefail
+
+# Get clean list of systemd service names, stripping out stray characters
+services=$(systemctl list-units --type=service --all --no-legend --no-pager \
+  | awk '{print $1}' \
+  | grep -E '\.service$' \
+  | grep -v '^●$' \
+  | sort -u)
+
+# FZF select
+selected_service=$(echo "$services" | fzf --prompt="Select service: " --height=40%)
+
+# Exit cleanly if nothing selected
+[ -z "$selected_service" ] && echo "No service selected." && exit 0
+
+echo "Tailing logs for: $selected_service"
+sudo journalctl -u "$selected_service" -f
