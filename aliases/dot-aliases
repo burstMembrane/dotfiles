@@ -1,5 +1,6 @@
 #!/bin/zsh
 alias ai="askg"
+alias inst="pyinstrument --from-path"
 alias bunx="bun x"
 alias c="cargo"
 alias c="cargo"
@@ -50,3 +51,6 @@ alias commitgitignore="git commit -m 'chore: update gitignore'"
 alias uva="uv add"
 alias svenv="source .venv/bin/activate"
 alias shadadd="bunx --bun shadcn@latest add"
+alias jl="jless"
+alias rsync-git='rsync -av --files-from=<(git ls-files)'
+alias lp="python -m line_profiler -u 1e-3 -rtmz profile_output.lprof"

@@ -1,0 +1,10 @@
+#!/bin/bash
+module=$1
+if [ -z "$module" ]; then
+  echo "A python module must be provided e.g. mymodule.cli"
+  exit 1
+fi
+
+
+python -X importtime -m "$module" 2> import.log
+tuna import.log           
