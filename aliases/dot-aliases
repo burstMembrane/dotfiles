@@ -53,4 +53,7 @@ alias svenv="source .venv/bin/activate"
 alias shadadd="bunx --bun shadcn@latest add"
 alias jl="jless"
 alias rsync-git='rsync -av --files-from=<(git ls-files)'
+alias wrangler="npx wrangler"
+alias pn=pnpm
+alias mk=make
 alias lp="python -m line_profiler -u 1e-3 -rtmz profile_output.lprof"
