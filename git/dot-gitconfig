@@ -30,3 +30,5 @@ add-safe = "!f() { \
 	required = true
 	clean = git-lfs clean -- %f
 	smudge = git-lfs smudge -- %f
+[coderabbit]
+	machineId = cli/0129f75bbb6a4fba90d4c876b812c013
