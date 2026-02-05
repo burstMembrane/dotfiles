@@ -154,17 +154,17 @@ log_success "detected: $TRIPLET"
 log "Installing system packages..."
 packages=$(yq '.system.packages[]' bootstrap.yaml | tr '\n' ' ')
 
-if [ ! -f /home/liam/.packages_installed ] || ! diff <(echo "$packages" | tr ' ' '\n' | sort) <(sort /home/liam/.packages_installed) >/dev/null; then
+if [ ! -f $HOME/.packages_installed ] || ! diff <(echo "$packages" | tr ' ' '\n' | sort) <(sort $HOME/.packages_installed) >/dev/null; then
     # show the different packages 
     echo "The following packages will be installed:"
     echo "$packages"
     sudo apt-get update
     sudo apt-get install -y $packages
     # Save the list of packages to the file
-    echo "$packages" | tr ' ' '\n' > /home/liam/.packages_installed
+    echo "$packages" | tr ' ' '\n' > $HOME/.packages_installed
 fi
 
-if [ -f /home/liam/.packages_installed ]; then
+if [ -f $HOME/.packages_installed ]; then
     log_success "System packages are already installed"
 fi
 
