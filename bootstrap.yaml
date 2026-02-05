@@ -30,17 +30,17 @@ tools:
   neovim:
     check_command: nvim
     install:
-      - 'NVIM_ARCH=$(uname -m); case "$NVIM_ARCH" in aarch64|arm64) NVIM_ARCH="arm64";; x86_64) NVIM_ARCH="x86_64";; esac; echo "Downloading from: https://github.com/neovim/neovim/releases/latest/download/nvim-linux-\${NVIM_ARCH}.tar.gz"; curl -fLO "https://github.com/neovim/neovim/releases/latest/download/nvim-linux-\${NVIM_ARCH}.tar.gz"'
+      - 'case "$(uname -m)" in aarch64|arm64) curl -fLO https://github.com/neovim/neovim/releases/latest/download/nvim-linux-arm64.tar.gz ;; x86_64) curl -fLO https://github.com/neovim/neovim/releases/latest/download/nvim-linux-x86_64.tar.gz ;; esac'
       - mkdir -p "$HOME/.local/bin"
-      - 'NVIM_ARCH=$(uname -m); case "$NVIM_ARCH" in aarch64|arm64) NVIM_ARCH="arm64";; x86_64) NVIM_ARCH="x86_64";; esac; tar -C "$HOME/.local/bin" -xzf "nvim-linux-\${NVIM_ARCH}.tar.gz"'
-      - 'NVIM_ARCH=$(uname -m); case "$NVIM_ARCH" in aarch64|arm64) NVIM_ARCH="arm64";; x86_64) NVIM_ARCH="x86_64";; esac; mv "$HOME/.local/bin/nvim-linux-\${NVIM_ARCH}/" "$HOME/.local/bin/nvim-dir"'
+      - 'case "$(uname -m)" in aarch64|arm64) tar -C "$HOME/.local/bin" -xzf nvim-linux-arm64.tar.gz ;; x86_64) tar -C "$HOME/.local/bin" -xzf nvim-linux-x86_64.tar.gz ;; esac'
+      - 'case "$(uname -m)" in aarch64|arm64) mv "$HOME/.local/bin/nvim-linux-arm64/" "$HOME/.local/bin/nvim-dir" ;; x86_64) mv "$HOME/.local/bin/nvim-linux-x86_64/" "$HOME/.local/bin/nvim-dir" ;; esac'
       - ln -sf "$HOME/.local/bin/nvim-dir/bin/nvim" "$HOME/.local/bin/nvim"
     add_to_path:
       - "$HOME/.local/bin"
     post_install:
       - nvim --version
     cleanup:
-      - 'NVIM_ARCH=$(uname -m); case "$NVIM_ARCH" in aarch64|arm64) NVIM_ARCH="arm64";; x86_64) NVIM_ARCH="x86_64";; esac; rm -f nvim-linux-\${NVIM_ARCH}.tar.gz'
+      - 'case "$(uname -m)" in aarch64|arm64) rm -f nvim-linux-arm64.tar.gz ;; x86_64) rm -f nvim-linux-x86_64.tar.gz ;; esac'
 
   uv:
     check_path: $HOME/.local/bin/uv 
