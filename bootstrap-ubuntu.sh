@@ -119,13 +119,22 @@ add_to_dotfiles_zshrc() {
     fi
 }
 
+APT_UPDATED=false
+ensure_apt_updated() {
+    if [ "$APT_UPDATED" = false ]; then
+        sudo apt-get update
+        APT_UPDATED=true
+    fi
+}
+
 if ! command -v sudo &>/dev/null; then
     apt-get update
+    APT_UPDATED=true
     apt-get install -y sudo
 fi
 
 if ! command -v locale-gen &>/dev/null; then
-   sudo  apt-get update
+    ensure_apt_updated
     sudo apt-get install -y locales
 fi
 
@@ -155,10 +164,10 @@ log "Installing system packages..."
 packages=$(yq '.system.packages[]' bootstrap.yaml | tr '\n' ' ')
 
 if [ ! -f $HOME/.packages_installed ] || ! diff <(echo "$packages" | tr ' ' '\n' | sort) <(sort $HOME/.packages_installed) >/dev/null; then
-    # show the different packages 
+    # show the different packages
     echo "The following packages will be installed:"
     echo "$packages"
-    sudo apt-get update
+    ensure_apt_updated
     sudo apt-get install -y $packages
     # Save the list of packages to the file
     echo "$packages" | tr ' ' '\n' > $HOME/.packages_installed
