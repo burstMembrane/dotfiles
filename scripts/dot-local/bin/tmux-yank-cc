@@ -1,0 +1,65 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Usage:
+#   tmux-yank-conv-commit [LINES]
+# Defaults to 50 lines.
+LINES="${1:-10}"
+
+# Conventional Commits header regex:
+# - optional leading whitespace
+# - type
+# - optional scope "(...)" (any chars except ')')
+# - optional breaking change '!'
+# - ": " separator
+# - non-empty description
+REGEX='^[[:space:]]*(feat|fix|docs|style|refactor|perf|test|chore|build|ci|revert)(\([^)]+\))?(!)?: .+'
+
+# Ensure we're in tmux
+if [[ -z "${TMUX:-}" ]]; then
+  echo "Error: not inside tmux." >&2
+  exit 1
+fi
+
+# Grab headers from the last N lines of the active pane
+commit="$(
+  tmux capture-pane -p -S "-${LINES}" \
+    | grep -E "${REGEX}" || true
+)"
+
+# Strip leading whitespace for clean clipboard content
+commit="$(printf "%s" "$commit" | sed -E 's/^[[:space:]]+//')"
+
+# Copy to clipboard (best effort across platforms)
+copy_to_clipboard() {
+  if command -v pbcopy >/dev/null 2>&1; then
+    printf "%s" "$commit" | pbcopy
+    return 0
+  fi
+  if command -v wl-copy >/dev/null 2>&1; then
+    printf "%s" "$commit" | wl-copy
+    return 0
+  fi
+  if command -v xclip >/dev/null 2>&1; then
+    printf "%s" "$commit" | xclip -selection clipboard
+    return 0
+  fi
+  if command -v xsel >/dev/null 2>&1; then
+    printf "%s" "$commit" | xsel --clipboard --input
+    return 0
+  fi
+  return 1
+}
+
+if ! copy_to_clipboard; then
+  tmux display-message "No clipboard tool found (pbcopy/wl-copy/xclip/xsel)."
+  exit 2
+fi
+
+# Show a tmux message. Truncate to avoid wrecking the status line.
+if [[ -z "$commit" ]]; then
+  tmux display-message "No conventional commit found in last ${LINES} lines (clipboard cleared)."
+else
+  preview="$(printf "%s" "$commit" | tr '\n' ' ' | cut -c1-180)"
+  tmux display-message "Copied commit(s): ${preview}"
+fi

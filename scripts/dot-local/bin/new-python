@@ -1,0 +1,4 @@
+#!/bin/bash
+
+ kickstart https://github.com/burstMembrane/python-template.git -o $1
+ 

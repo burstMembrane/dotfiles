@@ -1,0 +1,83 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# tmux-with-logging
+# Pane output logging using tmux pipe-pane + a dedicated logs window tailing those files.
+#
+# Usage:
+#   ./tmux-with-logging [session_name] [num_panes]
+#
+# Example:
+#   ./tmux-with-logging debug 3
+
+SESSION_NAME="${1:-debug}"
+NUM_PANES="${2:-3}"
+TMUX_BIN="${TMUX_BIN:-tmux}"
+
+LOG_ROOT="${HOME}/tmux-logging/${SESSION_NAME}"
+mkdir -p "$LOG_ROOT"
+
+if "$TMUX_BIN" has-session -t "$SESSION_NAME" 2>/dev/null; then
+  echo "Session '$SESSION_NAME' already exists. Refusing to clobber."
+  exit 1
+fi
+
+# Create session + work window.
+"$TMUX_BIN" new-session -d -s "$SESSION_NAME" -n "work"
+
+# Build N panes in work window (tiled).
+if [[ "$NUM_PANES" -gt 1 ]]; then
+  for _ in $(seq 2 "$NUM_PANES"); do
+    "$TMUX_BIN" split-window -t "${SESSION_NAME}:work" -v
+  done
+  "$TMUX_BIN" select-layout -t "${SESSION_NAME}:work" tiled
+fi
+
+# Collect pane IDs in work window.
+mapfile -t WORK_PANES < <("$TMUX_BIN" list-panes -t "${SESSION_NAME}:work" -F "#{pane_id}")
+
+# Enable output logging for each work pane -> one file per pane.
+declare -a LOG_FILES=()
+for pane_id in "${WORK_PANES[@]}"; do
+  safe_id="${pane_id#%}"
+  log_file="${LOG_ROOT}/pane-${safe_id}.log"
+  LOG_FILES+=("$log_file")
+
+  : > "$log_file"
+  "$TMUX_BIN" pipe-pane -t "$pane_id" -o "cat >> '$log_file'"
+done
+
+# Create a logs window with a unique name (avoid collisions).
+LOGS_WIN="logs"
+if "$TMUX_BIN" list-windows -t "$SESSION_NAME" -F "#{window_name}" | grep -qx "$LOGS_WIN"; then
+  LOGS_WIN="logs-$(date +%s)"
+fi
+
+"$TMUX_BIN" new-window -t "${SESSION_NAME}:" -n "$LOGS_WIN"
+
+# Select logs window and get the active pane_id reliably.
+"$TMUX_BIN" select-window -t "${SESSION_NAME}:$LOGS_WIN"
+active_pane="$("$TMUX_BIN" display-message -t "${SESSION_NAME}:$LOGS_WIN" -p "#{pane_id}")"
+
+# First tail in the existing pane.
+"$TMUX_BIN" send-keys -t "$active_pane" "tail -F '${LOG_FILES[0]}'" C-m
+
+# For each additional log: split, capture new pane_id, tail there.
+for ((i=1; i<${#LOG_FILES[@]}; i++)); do
+  "$TMUX_BIN" split-window -t "${SESSION_NAME}:$LOGS_WIN" -v
+
+  new_pane="$("$TMUX_BIN" display-message -t "${SESSION_NAME}:$LOGS_WIN" -p "#{pane_id}")"
+  "$TMUX_BIN" send-keys -t "$new_pane" "tail -F '${LOG_FILES[$i]}'" C-m
+done
+
+"$TMUX_BIN" select-layout -t "${SESSION_NAME}:$LOGS_WIN" tiled
+
+# Focus work window by default.
+"$TMUX_BIN" select-window -t "${SESSION_NAME}:work"
+
+# Attach/switch depending on whether we're already in tmux.
+if [[ -n "${TMUX:-}" ]]; then
+  exec "$TMUX_BIN" switch-client -t "$SESSION_NAME"
+else
+  exec "$TMUX_BIN" attach -t "$SESSION_NAME"
+fi

@@ -1,4 +1,7 @@
 #!/bin/zsh
+alias cc="claude"
+alias ctui="claude-tmux ui"
+alias pn="pnpm"
 alias ct="claude-tmux"
 alias ai="askg"
 alias inst="pyinstrument --from-path"

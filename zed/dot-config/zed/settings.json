@@ -7,7 +7,7 @@
 // custom settings, run the `open default settings` command
 // from the command palette or from `Zed` application menu.
 {
-  "theme": "One Dark Pro",
+  "theme": "Github Dark",
   "ui_font_size": 16,
   "vim_mode": true,
   "buffer_font_size": 19.0,

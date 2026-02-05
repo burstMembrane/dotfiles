@@ -1,0 +1,42 @@
+#!/bin/bash
+set -euo pipefail
+
+# A good directory preview:
+# - shows path + a compact listing
+# - falls back cleanly if exa/eza isn't installed
+dir_preview='
+p="{}"
+echo "$p"
+echo
+if command -v eza >/dev/null 2>&1; then
+  eza -a --group-directories-first --color=always --icons --git --time-style=long-iso "$p" 2>/dev/null | head -200
+elif command -v exa >/dev/null 2>&1; then
+  exa -a --group-directories-first --color=always --icons --git --time-style=long-iso "$p" 2>/dev/null | head -200
+else
+  # macOS: ls -G enables color. GNU ls uses --color=always.
+  (ls -laG "$p" 2>/dev/null || ls -la --color=always "$p" 2>/dev/null || ls -la "$p") | head -200
+fi
+'
+
+# handle vscode/cursor with URL schemes to avoid IPC overhead
+if [ "${EDITOR:-}" = "code" ]; then
+  fd -t d \
+    | fzf --preview="$dir_preview" --preview-window 70% \
+    | xargs -r realpath \
+    | xargs -r -I{} open "vscode://file/{}"
+  exit 0
+elif [ "${EDITOR:-}" = "cursor" ]; then
+  fd -t d \
+    | fzf --preview="$dir_preview" --preview-window 70% \
+    | xargs -r realpath \
+    | xargs -r -I{} open "cursor://open?url=file://{}"
+  exit 0
+else
+  fzf \
+    --tmux 100% \
+    --ansi \
+    --preview="$dir_preview" \
+    --bind "enter:become($EDITOR {})" \
+    --bind 'start:reload: fd -t d' \
+    --preview-window 70%
+fi
