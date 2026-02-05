@@ -119,6 +119,11 @@ add_to_dotfiles_zshrc() {
     fi
 }
 
+log() { echo -e "\033[1;34m$1\033[0m"; }
+log_success() { echo -e "\033[1;32m$1\033[0m"; }
+log_warning() { echo -e "\033[1;33m$1\033[0m"; }
+log_error() { echo -e "\033[1;31m$1\033[0m"; }
+
 APT_UPDATED=false
 APT_CACHE_MAX_AGE=3600  # 1 hour in seconds
 ensure_apt_updated() {
@@ -164,12 +169,6 @@ if ! command -v yq &>/dev/null; then
     chmod +x "$HOME/.local/bin/yq"
     export PATH="$HOME/.local/bin:$PATH"
 fi
-
-log() { echo -e "\033[1;34m$1\033[0m"; }
-log_success() { echo -e "\033[1;32m$1\033[0m"; }
-log_warning() { echo -e "\033[1;33m$1\033[0m"; }
-log_error() { echo -e "\033[1;31m$1\033[0m"; }
-
 
 log_success "detected OS: $OS"
 log_success "detected ARCH: $ARCH"
