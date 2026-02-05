@@ -30,17 +30,17 @@ tools:
   neovim:
     check_command: nvim
     install:
-      - 'case "$(uname -m)" in aarch64|arm64) curl -fLO https://github.com/neovim/neovim/releases/latest/download/nvim-linux-arm64.tar.gz ;; x86_64) curl -fLO https://github.com/neovim/neovim/releases/latest/download/nvim-linux-x86_64.tar.gz ;; esac'
+      - 'if [ "$(uname -m)" = "aarch64" ]; then curl -fLO https://github.com/neovim/neovim/releases/latest/download/nvim-linux-arm64.tar.gz; else curl -fLO https://github.com/neovim/neovim/releases/latest/download/nvim-linux-x86_64.tar.gz; fi'
       - mkdir -p "$HOME/.local/bin"
-      - 'case "$(uname -m)" in aarch64|arm64) tar -C "$HOME/.local/bin" -xzf nvim-linux-arm64.tar.gz ;; x86_64) tar -C "$HOME/.local/bin" -xzf nvim-linux-x86_64.tar.gz ;; esac'
-      - 'case "$(uname -m)" in aarch64|arm64) mv "$HOME/.local/bin/nvim-linux-arm64/" "$HOME/.local/bin/nvim-dir" ;; x86_64) mv "$HOME/.local/bin/nvim-linux-x86_64/" "$HOME/.local/bin/nvim-dir" ;; esac'
+      - 'if [ "$(uname -m)" = "aarch64" ]; then tar -C "$HOME/.local/bin" -xzf nvim-linux-arm64.tar.gz; else tar -C "$HOME/.local/bin" -xzf nvim-linux-x86_64.tar.gz; fi'
+      - 'if [ "$(uname -m)" = "aarch64" ]; then mv "$HOME/.local/bin/nvim-linux-arm64/" "$HOME/.local/bin/nvim-dir"; else mv "$HOME/.local/bin/nvim-linux-x86_64/" "$HOME/.local/bin/nvim-dir"; fi'
       - ln -sf "$HOME/.local/bin/nvim-dir/bin/nvim" "$HOME/.local/bin/nvim"
     add_to_path:
       - "$HOME/.local/bin"
     post_install:
       - nvim --version
     cleanup:
-      - 'case "$(uname -m)" in aarch64|arm64) rm -f nvim-linux-arm64.tar.gz ;; x86_64) rm -f nvim-linux-x86_64.tar.gz ;; esac'
+      - 'if [ "$(uname -m)" = "aarch64" ]; then rm -f nvim-linux-arm64.tar.gz; else rm -f nvim-linux-x86_64.tar.gz; fi'
 
   uv:
     check_path: $HOME/.local/bin/uv 
