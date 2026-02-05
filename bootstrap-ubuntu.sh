@@ -120,11 +120,25 @@ add_to_dotfiles_zshrc() {
 }
 
 APT_UPDATED=false
+APT_CACHE_MAX_AGE=3600  # 1 hour in seconds
 ensure_apt_updated() {
-    if [ "$APT_UPDATED" = false ]; then
-        sudo apt-get update
-        APT_UPDATED=true
+    if [ "$APT_UPDATED" = true ]; then
+        return
     fi
+
+    # Check if apt cache was updated recently
+    local apt_cache="/var/lib/apt/lists/partial"
+    if [ -d "$apt_cache" ]; then
+        local cache_age=$(($(date +%s) - $(stat -c %Y "$apt_cache" 2>/dev/null || echo 0)))
+        if [ "$cache_age" -lt "$APT_CACHE_MAX_AGE" ]; then
+            log "apt cache is fresh (${cache_age}s old), skipping update"
+            APT_UPDATED=true
+            return
+        fi
+    fi
+
+    sudo apt-get update
+    APT_UPDATED=true
 }
 
 if ! command -v sudo &>/dev/null; then
@@ -177,8 +191,18 @@ if [ -f $HOME/.packages_installed ]; then
     log_success "System packages are already installed"
 fi
 
+ensure_locale() {
+    local target_locale="$1"
+    if locale -a 2>/dev/null | grep -q "^${target_locale//-/}$\|^${target_locale}$"; then
+        log_success "Locale $target_locale is already available"
+        return
+    fi
+    log "Generating locale $target_locale..."
+    sudo locale-gen "$target_locale"
+}
+
 locale=$(yq '.locale' bootstrap.yaml)
-sudo locale-gen "$locale"
+ensure_locale "$locale"
 
 # Create paths
 while IFS= read -r path; do
@@ -301,59 +325,8 @@ done
 
 
 
-# Check current locale
-echo "Checking current locale settings..."
-locale
-
-# Set locale variables in ~/.zshrc if not already set
-ZSHRC="$HOME/.zshrc"
-LOCALE_STRING="export LANG=en_AU.UTF-8\nexport LC_ALL=en_US.UTF-8"
-
-if ! grep -q "export LANG=en_AU.UTF-8" "$ZSHRC"; then
-    echo "Adding locale settings to $ZSHRC..."
-    echo -e "\n# Locale settings for Agnoster theme\n$LOCALE_STRING" >> "$ZSHRC"
-else
-    echo "Locale settings already present in $ZSHRC."
-fi
-
 # Apply locale settings to current shell session
 export LANG=en_AU.UTF-8
-export LC_ALL=en_AU.UTF-8
-
-# Generate locale (for Linux)
-if command -v locale-gen &> /dev/null; then
-    echo "Generating locale..."
-    sudo locale-gen en_AU.UTF-8
-fi
-
-# Apply locale changes (Debian/Ubuntu)
-if command -v dpkg-reconfigure &> /dev/null; then
-    echo "Reconfiguring locales..."
-    sudo dpkg-reconfigure --frontend=noninteractive locales
-fi
-
-# Verify locale changes
-echo "Final locale settings:"
-locale
-
-
-
-# add environment variables from the bootstrap.yaml file
-
-export LANG=en_AU.UTF-8
-export LANGUAGE=en_AU.UTF-8
-export LC_CTYPE=en_AU.UTF-8
-export LC_NUMERIC=en_AU.UTF-8
-export LC_TIME=en_AU.UTF-8
-export LC_COLLATE=en_AU.UTF-8
-export LC_MONETARY=en_AU.UTF-8
-export LC_MESSAGES=en_AU.UTF-8
-export LC_PAPER=en_AU.UTF-8
-export LC_NAME=en_AU.UTF-8
-export LC_ADDRESS=en_AU.UTF-8
-export LC_TELEPHONE=en_AU.UTF-8
-export LC_MEASUREMENT=en_AU.UTF-8
-export LC_IDENTIFICATION=en_AU.UTF-8
 export LC_ALL=en_AU.UTF-8
 
 dotfiles_dir="$HOME/dotfiles"
