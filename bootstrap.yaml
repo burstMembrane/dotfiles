@@ -6,7 +6,6 @@ system:
     - git
     - wget
     - unzip
-    - zsh
     - tmux
     - ripgrep
     - bat
@@ -22,11 +21,9 @@ system:
     - dpkg
     - apt-utils
     - git-delta
-    - bat
     - zoxide
 
 tools:
-
   neovim:
     check_command: nvim
     install:
@@ -35,69 +32,48 @@ tools:
       - "$HOME/.local/bin"
 
   uv:
-    check_path: $HOME/.local/bin/uv 
+    check_path: $HOME/.local/bin/uv
     install:
       - curl -fsSL https://astral.sh/uv/install.sh | sh
 
   zoxide:
-    check_command: zoxide --version
+    check_command: zoxide
     add_to_shell:
       - eval "$(zoxide init zsh)"
 
   rust:
-    check_path: $HOME/.cargo/bin/rustc 
+    check_path: $HOME/.cargo/bin/rustc
     install:
-      - curl https://sh.rustup.rs  -o rustup-init.sh
-      - sudo chmod +x rustup-init.sh
-      - ./rustup-init.sh -y
+      - bash "$HOME/dotfiles/scripts/install-rust.sh"
     add_to_shell:
-      - . "$HOME/.cargo/env"  
-    post_install:
-      - $HOME/.cargo/bin/rustc --version
-    cleanup:
-      - rm rustup-init.sh
+      - . "$HOME/.cargo/env"
 
   fzf:
     check_path: "$HOME/.fzf"
     install:
-      - git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf
-      - ~/.fzf/install --all --no-update-rc
+      - bash "$HOME/dotfiles/scripts/install-fzf.sh"
     add_to_path:
       - "$HOME/.fzf/bin"
-    post_install:
-      - "$HOME/.fzf/bin/fzf --version"
 
   skim:
     check_path: "$HOME/.skim"
     install:
-      - git clone --depth 1 https://github.com/lotabout/skim.git ~/.skim
-      - ~/.skim/install
+      - bash "$HOME/dotfiles/scripts/install-skim.sh"
     add_to_path:
       - "$HOME/.skim/bin"
     add_to_shell:
       - "[ -f ~/.skim/shell/key-bindings.zsh ] && source ~/.skim/shell/key-bindings.zsh"
       - "[ -f ~/.skim/shell/completion.zsh ] && source ~/.skim/shell/completion.zsh"
-    post_install:
-      - "$HOME/.skim/bin/sk --version"
 
   oh-my-zsh:
     check_path: "$HOME/.oh-my-zsh/oh-my-zsh.sh"
     install:
       - curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh | bash
 
-  zsh-autosuggestions:
-    check_path: "$HOME/.oh-my-zsh/custom/plugins/zsh-autosuggestions/"
+  zsh-plugins:
+    check_path: "$HOME/.oh-my-zsh/custom/plugins/zsh-autosuggestions"
     install:
-      - git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions
-  zsh-syntax-highlighting:
-    check_path: "$HOME/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting/"
-    install:
-      - git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting
-
-  zsh-vi-mode:
-    check_path: "$HOME/.oh-my-zsh/custom/plugins/zsh-vi-mode/"
-    install:
-      - git clone https://github.com/jeffreytse/zsh-vi-mode   ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-vi-mode
+      - bash "$HOME/dotfiles/scripts/install-zsh-plugins.sh"
 
   tmux_plugin_manager:
     check_path: "$HOME/.tmux/plugins/tpm"
@@ -109,6 +85,7 @@ tools:
     install:
       - mkdir -p ~/.vim/pack/themes/start
       - git clone https://github.com/tomasiser/vim-code-dark $HOME/.vim/pack/themes/start/vim-code-dark
+
   nvm:
     check_path: $HOME/.nvm/nvm.sh
     install:
@@ -121,25 +98,16 @@ tools:
   gnu_stow:
     check_command: stow
     install:
-      - export INITIAL_DIR=$(pwd)
-      - cd /tmp
-      - curl -fsSL http://ftp.gnu.org/gnu/stow/stow-2.4.1.tar.gz -o stow-2.4.1.tar.gz
-      - tar -xzf stow-2.4.1.tar.gz
-      - cd stow-2.4.1
-      - ./configure
-      - make
-      - sudo make install
-      - cd "$INITIAL_DIR"
-    cleanup:
-      - rm -rf /tmp/stow-2.4.1 /tmp/stow-2.4.1.tar.gz
+      - bash "$HOME/dotfiles/scripts/install-gnu-stow.sh"
 
 paths:
   - $HOME/.local/bin
-  - $HOME/.tmux/plugins/tmux-session-wizard/bin 
+  - $HOME/.tmux/plugins/tmux-session-wizard/bin
 
 symlinks:
   - source: /usr/bin/batcat
     target: "$HOME/.local/bin/bat"
+
 env:
   - EDITOR=$HOME/.local/bin/nvim
   - SUDO_EDITOR=$EDITOR
