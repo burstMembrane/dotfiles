@@ -30,18 +30,17 @@ tools:
   neovim:
     check_command: nvim
     install:
-      - 'NVIM_ARCH=$(arch); [ "$NVIM_ARCH" = "aarch64" ] && NVIM_ARCH="arm64"; curl -LO "https://github.com/neovim/neovim/releases/latest/download/nvim-linux-${NVIM_ARCH}.tar.gz"'
-      - sudo mkdir -p "$HOME/.local/bin"
-      - 'NVIM_ARCH=$(arch); [ "$NVIM_ARCH" = "aarch64" ] && NVIM_ARCH="arm64"; sudo tar -C "$HOME/.local/bin" -xzf "nvim-linux-${NVIM_ARCH}.tar.gz"'
+      - 'NVIM_ARCH=$(uname -m); case "$NVIM_ARCH" in aarch64|arm64) NVIM_ARCH="arm64";; x86_64) NVIM_ARCH="x86_64";; esac; curl -fLO "https://github.com/neovim/neovim/releases/latest/download/nvim-linux-${NVIM_ARCH}.tar.gz"'
       - mkdir -p "$HOME/.local/bin"
-      - 'NVIM_ARCH=$(arch); [ "$NVIM_ARCH" = "aarch64" ] && NVIM_ARCH="arm64"; mv "$HOME/.local/bin/nvim-linux-${NVIM_ARCH}/" "$HOME/.local/bin/nvim-dir"'
+      - 'NVIM_ARCH=$(uname -m); case "$NVIM_ARCH" in aarch64|arm64) NVIM_ARCH="arm64";; x86_64) NVIM_ARCH="x86_64";; esac; tar -C "$HOME/.local/bin" -xzf "nvim-linux-${NVIM_ARCH}.tar.gz"'
+      - 'NVIM_ARCH=$(uname -m); case "$NVIM_ARCH" in aarch64|arm64) NVIM_ARCH="arm64";; x86_64) NVIM_ARCH="x86_64";; esac; mv "$HOME/.local/bin/nvim-linux-${NVIM_ARCH}/" "$HOME/.local/bin/nvim-dir"'
       - ln -sf "$HOME/.local/bin/nvim-dir/bin/nvim" "$HOME/.local/bin/nvim"
     add_to_path:
       - "$HOME/.local/bin"
     post_install:
       - nvim --version
     cleanup:
-      - 'NVIM_ARCH=$(arch); [ "$NVIM_ARCH" = "aarch64" ] && NVIM_ARCH="arm64"; rm nvim-linux-${NVIM_ARCH}.tar.gz'
+      - 'NVIM_ARCH=$(uname -m); case "$NVIM_ARCH" in aarch64|arm64) NVIM_ARCH="arm64";; x86_64) NVIM_ARCH="x86_64";; esac; rm -f nvim-linux-${NVIM_ARCH}.tar.gz'
 
   uv:
     check_path: $HOME/.local/bin/uv 
